@@ -6,7 +6,7 @@ let stream = require( 'stream' );
 let _ = require( 'lodash' );
 let Funnel = require( 'stream-funnel' );
 let debug = require( 'debug' )( 'Providers:Base' );
-let trace = require( 'memon' );
+// let trace = require( 'memon' );
 
 // Load my modules
 
@@ -55,7 +55,7 @@ class Provider extends stream.PassThrough {
     points = points.slice( currentIndex );
 
     debug( 'Starting from index: %d', currentIndex );
-    trace( this.toString()+' starting GEO' );
+    // trace( this.toString()+' starting GEO' );
 
     let funnel = new Funnel( 'Geo data' );
 
@@ -65,7 +65,7 @@ class Provider extends stream.PassThrough {
       funnel.add( account );
       account.geo( points );
     }
-    trace( 'Started '+this.toString()+' accounts' );
+    // trace( 'Started '+this.toString()+' accounts' );
 
     // Gather all data and send them as myself :)
     funnel

@@ -9,6 +9,9 @@ let debug = require( 'debug' )( 'Utils:stream wrapper' );
 // Load my modules
 
 // Constant declaration
+const WRAP_OPTS = {
+  field: 'source',
+};
 
 // Module variables declaration
 
@@ -32,7 +35,7 @@ class Saver extends stream.Transform {
   _transform( data, enc, cb ) {
     debug( '%s wrapping', this, data.id );
 
-    let post = wrapPost( data, this.provider );
+    let post = wrapPost( data, this.provider, WRAP_OPTS );
     return cb( null, post );
   }
 }

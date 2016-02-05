@@ -4,7 +4,7 @@
       "key": {
         "id": 1
       },
-      "name": "ID",
+      "name": "id_1",
       "unique": true,
       "background": true,
       "dropDups": true
@@ -13,42 +13,49 @@
       "key": {
         "lang": 1
       },
-      "name": "Language",
+      "name": "lang_1",
       "background": true
     },
     {
       "key": {
         "location": "2dsphere"
       },
-      "name": "Location",
+      "name": "location_1",
       "background": true
     },
     {
       "key": {
         "nil": 1
       },
-      "name": "NIL",
+      "name": "nil_1",
+      "background": true
+    },
+    {
+      "key": {
+        "municipality": 1
+      },
+      "name": "municipality_1",
       "background": true
     },
     {
       "key": {
         "date": 1
       },
-      "name": "Date",
+      "name": "date_1",
       "background": true
     },
     {
       "key": {
         "author": 1
       },
-      "name": "Author",
+      "name": "author_1",
       "background": true
     },
     {
       "key": {
-        "provider": 1
+        "source": 1
       },
-      "name": "Provider",
+      "name": "source_1",
       "background": true
     }
   ]

@@ -13,6 +13,7 @@
     "@volox/social-post-wrapper": "0.x",
     "bluebird": "3.x",
     "co": "4.x",
+    "db-utils": "volox/node-db-utils",
     "debug": "2.x",
     "instagram-node": "0.5.x",
     "lodash": "3.x",

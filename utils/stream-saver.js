@@ -4,10 +4,10 @@ let stream = require( 'stream' );
 
 // Load modules
 let debug = require( 'debug' )( 'Utils:stream saver' );
-let trace = require( 'memon' );
+// let trace = require( 'memon' );
 
 // Load my modules
-let db = require( '../db' );
+let db = require( 'db-utils' );
 
 // Constant declaration
 
