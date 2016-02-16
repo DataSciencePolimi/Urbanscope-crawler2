@@ -108,8 +108,8 @@ co( function* () {
 
     debug( 'Creating providers' );
     let providers = [];
-    // let twStream = new Twitter( TW_KEYS, redis );
-    // providers.push( twStream );
+    let twStream = new Twitter( TW_KEYS, redis );
+    providers.push( twStream );
     let igStream = new Instagram( IG_KEYS, redis );
     providers.push( igStream );
 
@@ -123,11 +123,11 @@ co( function* () {
     funnel.pipe( saver );
 
     // Collect data from all the providers
-    // funnel.add( twStream );
+    funnel.add( twStream );
     funnel.add( igStream );
 
     debug( 'Starting providers' );
-    // twStream.start( 'place', PLACE_ID, lastTwId );
+    twStream.start( 'place', PLACE_ID, lastTwId );
     igStream.start( 'geo', points, points.length - Number(lastIgLength) );
 
 
@@ -135,7 +135,6 @@ co( function* () {
     let waitPromise = streamToPromise( saver );
     debug( 'Waiting the stream to end' );
     yield waitPromise;
-    // trace( 'Wait promise done' );
 
     debug( 'Loop %d done', loopNum );
     debug( '________--------##### END LOOP #####--------________' );
