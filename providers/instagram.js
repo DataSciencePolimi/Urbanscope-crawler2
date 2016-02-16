@@ -2,7 +2,7 @@
 // Load system modules
 
 // Load modules
-let debug = require( 'debug' )( 'Providers:Instagram' );
+let debug = require( 'debug' )( 'UrbanScope:providers:Instagram' );
 
 // Load my modules
 let Account = require( '../accounts/instagram' );
@@ -17,8 +17,8 @@ let Provider = require( './base' );
 
 // Module class declaration
 class Instagram extends Provider {
-  constructor( keys ) {
-    super( 'Instagram', keys );
+  constructor( keys, redis ) {
+    super( 'Instagram', keys, redis );
 
     debug( 'Done' );
   }

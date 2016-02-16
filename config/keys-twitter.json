@@ -3,15 +3,5 @@
     "consumer_key": "tWeeaEfbIeHd7iYiLWfkAh6IP",
     "consumer_secret": "ibpvjdCOCxM30WGZsfZFGQyWbNXFxgkb8JUVKRIPMrpE3CNNN8",
     "app_only_auth": true
-  },
-  {
-    "consumer_key": "GLPoh9dQTeVHVBzQzSbLoVLif",
-    "consumer_secret": "JnDnsUp0T7IaaPaZklGtraWvdrG5JDOoP7iGPo5ncQ8BlgVytv",
-    "app_only_auth": true
-  },
-  {
-    "consumer_key": "idujkYOm1a1r2zvs1Bjwo60f3",
-    "consumer_secret": "qrBugr51ENtXWes9gzUoI7F3znLAcCli8R2yghOiMwj8BUo6O0",
-    "app_only_auth": true
   }
 ]

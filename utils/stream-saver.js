@@ -3,7 +3,7 @@
 let stream = require( 'stream' );
 
 // Load modules
-let debug = require( 'debug' )( 'Utils:stream saver' );
+let debug = require( 'debug' )( 'UrbanScope:utils:stream saver' );
 // let trace = require( 'memon' );
 
 // Load my modules

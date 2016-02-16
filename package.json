@@ -16,6 +16,7 @@
     "db-utils": "volox/node-db-utils",
     "debug": "2.x",
     "instagram-node": "0.5.x",
+    "ioredis": "^1.15.0",
     "lodash": "3.x",
     "mongodb": "2.x",
     "stream-funnel": "1.x",

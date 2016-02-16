@@ -3,7 +3,7 @@
 
 // Load modules
 let Promise = require( 'bluebird' );
-let debug = require( 'debug' )( 'Utils:stream to promise' );
+let debug = require( 'debug' )( 'UrbanScope:utils:stream to promise' );
 
 // Load my modules
 

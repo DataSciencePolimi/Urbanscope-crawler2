@@ -6,8 +6,7 @@ let querystring = require( 'querystring' );
 let _ = require( 'lodash' );
 let Twit = require( 'twit' );
 let Promise = require( 'bluebird' );
-let debug = require( 'debug' )( 'Accounts:Twitter' );
-// let trace = require( 'memon' );
+let debug = require( 'debug' )( 'UrbanScope:accounts:Twitter' );
 
 // Load my modules
 let Account = require( './base' );
@@ -59,6 +58,11 @@ class TwitterAccount extends Account {
     } else {
       // trace( this.toString()+' send tweets' );
       this.send( tweets );
+
+      let lastId = tweets[ tweets.length-1 ].id_str;
+      this.emit( 'status', {
+        lastId: lastId,
+      } );
     }
 
     let metadata = data.search_metadata;
@@ -68,7 +72,6 @@ class TwitterAccount extends Account {
       let query = querystring.parse( params );
       debug( '%s next: ', this, query );
 
-      // trace( this.toString()+' next page' );
       return this.get( query );
     }
   }
@@ -76,7 +79,6 @@ class TwitterAccount extends Account {
     query = _.assign( {}, DEFAULT_PARAMS, query );
 
     debug( '%s making query', this, query );
-    // trace( this.toString()+' start query' );
 
     return this.api
     .getAsync( 'search/tweets', query )
@@ -85,33 +87,31 @@ class TwitterAccount extends Account {
     .catch( err => {
       if( err.code===88 ) {
         debug( '%s rate limit', this );
-        // trace( this.toString()+' rate limit' );
 
         // On rate-limit repeat the request
         return Promise
         .delay( WINDOW )
-        // .tap( ()=> trace( this.toString()+' ready' ) )
         // Redo the same query
         .then( () => this.get( query ) );
       }
 
       debug( '%s error', this, err, err.stack );
-      // trace( this.toString()+' error', err.message );
       // On error do not repeat the request
     } )
 
   }
-  geo( points ) {
-    // trace( this.toString()+' get point' );
 
-    let point = points.pop();
+  geo( points ) {
+
+    let point = points.shift();
     // No more points, stream finished
     if( !point ) {
       debug( '%s no more valid points, end', this );
-      // trace( this.toString()+' done points' );
       this.end();
+      this.emit( 'status', { lastLength: null } );
       return;
     }
+    let length = points.length;
 
     debug( '%s query for point(%d): ', this, points.length, point );
 
@@ -126,7 +126,33 @@ class TwitterAccount extends Account {
     this.get( {
       q: geocode,
     } )
-    .then( ()=> { this.geo( points ); } );
+    .then( ()=> {
+      this.geo( points );
+      this.emit( 'status', {
+        lastLength: length,
+      } );
+    } );
+  }
+
+  place( placeId, lastId ) {
+    let query = 'place:'+placeId;
+    debug( '%s: query "%s"', this, query );
+
+    let options = {
+      q: query,
+    };
+
+    if( lastId ) {
+      options[ 'max_id' ] = lastId;
+    }
+
+
+    this.get( options )
+    .then( ()=> {
+      this.emit( 'status', {
+        lastId: null,
+      } );
+    } );
   }
 }
 

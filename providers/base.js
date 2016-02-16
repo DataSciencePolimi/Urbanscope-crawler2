@@ -5,8 +5,8 @@ let stream = require( 'stream' );
 // Load modules
 let _ = require( 'lodash' );
 let Funnel = require( 'stream-funnel' );
-let debug = require( 'debug' )( 'Providers:Base' );
-// let trace = require( 'memon' );
+let debug = require( 'debug' )( 'UrbanScope:providers:Base' );
+let Redis = require( 'ioredis' );
 
 // Load my modules
 
@@ -18,7 +18,7 @@ let debug = require( 'debug' )( 'Providers:Base' );
 
 // Module class declaration
 class Provider extends stream.PassThrough {
-  constructor( name, keys ) {
+  constructor( name, keys, redis ) {
     super( { objectMode: true } );
 
     keys = keys || [];
@@ -26,10 +26,19 @@ class Provider extends stream.PassThrough {
       keys = [ keys ];
     }
 
+    if( !redis ) {
+      redis = new Redis();
+    }
+    this.redis = redis;
+
     this.name = name;
     this.accounts = _.map( keys, this.createAccount, this );
     this.wrapper = this.createWrapper();
     debug( 'Created provider %s with %d accounts', this, this.accounts.length );
+
+    for( let account of this.accounts ) {
+      account.on( 'status', status => this._updateStatus( status ) );
+    }
   }
 
   // Overrides
@@ -42,36 +51,52 @@ class Provider extends stream.PassThrough {
   createWrapper() { throw new Error( 'Must implement createWrapper()' ); }
 
   // Methods
-  geo( points, currentIndex ) {
-    if( !Array.isArray( points ) ) {
-      points = [ points ];
-    }
-    currentIndex = Number( currentIndex );
-    if( isNaN( currentIndex ) ) {
-      currentIndex = 0;
-    }
+  _updateStatus( status ) {
+    this.redis.hmset( this.name, status );
+  }
+  _wrapCall( method ) {
+    let funnel = new Funnel( `${method} data` );
 
-    // Use only the pionts needed (also create a shallow copy)
-    points = points.slice( currentIndex );
-
-    debug( 'Starting from index: %d', currentIndex );
-    // trace( this.toString()+' starting GEO' );
-
-    let funnel = new Funnel( 'Geo data' );
-
-    // Start each account
+    // Prepare all accounts
     for( let account of this.accounts ) {
-      debug( 'Starting geo on %s', account );
       funnel.add( account );
-      account.geo( points );
     }
-    // trace( 'Started '+this.toString()+' accounts' );
 
     // Gather all data and send them as myself :)
     funnel
     .pipe( this.wrapper )
     .pipe( this );
+
+    // Start all accounts
+    let args = Array.prototype.slice.call( arguments, 1 );
+    for( let account of this.accounts ) {
+      account[ method ].apply( account, args ); // Call function on account
+    }
   }
+  geo( points, currentIndex ) {
+    if( !Array.isArray( points ) ) {
+      points = [ points ];
+    }
+    debug( '%s: performing geo requests of %d points', this, points.length );
+
+    currentIndex = Number( currentIndex );
+    if( isNaN( currentIndex ) ) {
+      currentIndex = 0;
+    }
+    debug( '%s: starting from index %d', this, currentIndex );
+
+    // Use only the pionts needed (also create a shallow copy)
+    points = points.slice( currentIndex );
+
+    this._wrapCall( 'geo', points );
+  }
+  place( placeId, lastId ) {
+    debug( '%s: performing place requests of %s', this, placeId );
+
+    this._wrapCall( 'place', placeId, lastId );
+  }
+
+  // Entry point
   start( action, data, other ) {
     action = ( action || '' ).toLowerCase();
 
@@ -79,6 +104,8 @@ class Provider extends stream.PassThrough {
 
     if( action==='geo' ) {
       this.geo( data, other );
+    } else if( action==='place' ) {
+      this.place( data, other );
     } else {
       throw new Error( `Action "${action}" not supported` );
     }

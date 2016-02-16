@@ -2,7 +2,7 @@
 // Load system modules
 
 // Load modules
-let debug = require( 'debug' )( 'Providers:Twitter' );
+let debug = require( 'debug' )( 'UrbanScope:providers:Twitter' );
 
 // Load my modules
 let Account = require( '../accounts/twitter' );
@@ -17,8 +17,8 @@ let Provider = require( './base' );
 
 // Module class declaration
 class Twitter extends Provider {
-  constructor( keys ) {
-    super( 'Twitter', keys );
+  constructor( keys, redis ) {
+    super( 'Twitter', keys, redis );
 
     debug( 'Done' );
   }

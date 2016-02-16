@@ -4,7 +4,7 @@
 // Load modules
 let _ = require( 'lodash' );
 let turf = require( 'turf' );
-let debug = require( 'debug' )( 'Grid' );
+let debug = require( 'debug' )( 'UrbanScope:grid' );
 
 // Load my modules
 let file = require( '../utils/file' );

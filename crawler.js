@@ -5,9 +5,9 @@
 let _ = require( 'lodash' );
 let co = require( 'co' );
 let Promise = require( 'bluebird' );
-let debug = require( 'debug' )( 'Crawler' );
+let debug = require( 'debug' )( 'UrbanScope:crawler' );
 let Funnel = require( 'stream-funnel' );
-// let trace = require( 'memon' );
+let Redis = require( 'ioredis' );
 
 // Load my modules
 let db = require( 'db-utils' );
@@ -18,16 +18,19 @@ let streamToPromise = require( './utils/stream-to-promise.js' );
 let Saver = require( './utils/stream-saver.js' );
 
 // Constant declaration
+const CONFIG = require( './config/' );
 const MONGO = require( './config/mongo.json' );
 const INDEXES = require( './config/mongo_indexes.json' );
 const COLLECTIONS = MONGO.collections;
 const DB_URL = MONGO.url;
 const DB_NAME = MONGO.name;
-const MUNICIPALITIES = require( './config/milan_municipalities.json' );
+const COLLECTION = 'posts';
+
 const TW_KEYS = require( './config/keys-twitter.json' );
 const IG_KEYS = require( './config/keys-instagram.json' );
-const RADIUS = 200;
-const COLLECTION = 'posts';
+
+const PLACE_ID = CONFIG.place;
+const RADIUS = CONFIG.radius;
 
 // Module variables declaration
 
@@ -65,42 +68,6 @@ function* getGridPoints( radius ) {
   debug( 'Generated %d points', points.length );
   return points;
 }
-function* updateMunicipalities( collectionName, municipalities ) {
-
-  for( let municipality of municipalities ) {
-    debug( 'Updating municipality for "%s"', municipality.properties.COMUNE );
-
-    let municipalityId = municipality.properties.PRO_COM;
-    let geometry = municipality.geometry;
-
-    let filter = {
-      location: {
-        $geoWithin: {
-          $geometry: geometry,
-        },
-      }
-    };
-
-    let num = yield db
-    .get( collectionName )
-    .find( filter )
-    .count();
-
-    debug( 'Updating %d tweets to %s', num, municipalityId );
-
-    let results = yield db
-    .get( collectionName )
-    .updateMany( filter, {
-      $set: {
-        municipality: municipalityId
-      },
-    } );
-
-    debug( 'Update result: %j', results );
-  }
-
-  return 5;
-}
 
 // Module class declaration
 
@@ -118,21 +85,32 @@ co( function* () {
 
   debug( 'Crawling on %d grid points', points.length );
 
+  let redis = new Redis( {
+    keyPrefix: 'UrbanScope:',
+  } );
+
+  // Retrieve the previous state
+  let lastTwId = yield redis.hget( 'Twitter', 'lastId' );
+  let lastIgLength = yield redis.hget( 'Instagram', 'lastLength' );
+  lastIgLength = lastIgLength || points.length;
+
+  debug( 'Last twitter id: %s', lastTwId );
+  debug( 'Last length: %s', lastIgLength );
+
 
   let loopNum = 0;
   // Start endless loop
   while( true ) {
     loopNum += 1;
 
-    // trace( 'Loop '+loopNum+' started' );
     debug( '________--------##### STARTING LOOP #####--------________' );
     debug( 'Loop %d started', loopNum );
 
     debug( 'Creating providers' );
     let providers = [];
-    let twStream = new Twitter( TW_KEYS );
-    providers.push( twStream );
-    let igStream = new Instagram( IG_KEYS );
+    // let twStream = new Twitter( TW_KEYS, redis );
+    // providers.push( twStream );
+    let igStream = new Instagram( IG_KEYS, redis );
     providers.push( igStream );
 
     // Create stream saver
@@ -145,16 +123,12 @@ co( function* () {
     funnel.pipe( saver );
 
     // Collect data from all the providers
-    funnel.add( twStream );
+    // funnel.add( twStream );
     funnel.add( igStream );
 
     debug( 'Starting providers' );
-    for( let provider of providers ) {
-      debug( 'Starting provider "%s"', provider );
-      let index = grid.index( provider.toString() );
-      provider.start( 'geo', points, index );
-    }
-    // trace( 'Providers started' );
+    // twStream.start( 'place', PLACE_ID, lastTwId );
+    igStream.start( 'geo', points, points.length - Number(lastIgLength) );
 
 
     // Wait for all the providers to finish, we simply wait for the collector/funnel
@@ -165,10 +139,6 @@ co( function* () {
 
     debug( 'Loop %d done', loopNum );
     debug( '________--------##### END LOOP #####--------________' );
-
-
-    yield updateMunicipalities( COLLECTIONS.posts, _.map( MUNICIPALITIES ) );
-    debug( 'Update done' );
 
     // Wait 5 seconds, just in case
     yield Promise.delay( 5000 );

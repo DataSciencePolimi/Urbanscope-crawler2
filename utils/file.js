@@ -4,7 +4,7 @@ let path = require( 'path' );
 let fs = require( 'fs' );
 
 // Load modules
-let debug = require( 'debug' )( 'Utils:file' );
+let debug = require( 'debug' )( 'UrbanScope:utils:file' );
 
 // Load my modules
 

@@ -4,7 +4,7 @@ let stream = require( 'stream' );
 
 // Load modules
 let wrapPost = require( '@volox/social-post-wrapper' );
-let debug = require( 'debug' )( 'Utils:stream wrapper' );
+let debug = require( 'debug' )( 'UrbanScope:utils:stream wrapper' );
 
 // Load my modules
 

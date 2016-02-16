@@ -3,7 +3,7 @@
 let stream = require( 'stream' );
 
 // Load modules
-let debug = require( 'debug' )( 'Accounts:Base' );
+let debug = require( 'debug' )( 'UrbanScope:accounts:Base' );
 
 // Load my modules
 

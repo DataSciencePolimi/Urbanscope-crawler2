@@ -1,14 +1,7 @@
 [DONE]
-- implement instagram
-    + DONE?
-- Refactor DB DONE
 
 [TODO]
-- restart query from the last id
-    + instagram
-    + twitter
-    + Table with index?
-- restart from last grid index
-    + instagram
-    + twitter
-    + Table with index?
+- Aggiungere Clarifai alla pipeline
+    + Per non uscire dai limiti mensili
+    + Prendo le top 650 giornaliere
+        * per stare nelle 20000 mensili di Clarifai

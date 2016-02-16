@@ -5,8 +5,7 @@
 let _ = require( 'lodash' );
 let ig = require( 'instagram-node' ).instagram;
 let Promise = require( 'bluebird' );
-let debug = require( 'debug' )( 'Accounts:Instagram' );
-// let trace = require( 'memon' );
+let debug = require( 'debug' )( 'UrbanScope:accounts:Instagram' );
 
 // Load my modules
 let Account = require( './base' );
@@ -52,8 +51,12 @@ class InstagramAccount extends Account {
       debug( '%s no more medias', this );
       return null;
     } else {
-      // trace( this.toString()+' send medias' );
       this.send( medias );
+
+      let lastId = medias[ medias.length-1 ].id;
+      this.emit( 'status', {
+        lastId: lastId,
+      } );
     }
 
     // Loop not available for location
@@ -64,7 +67,6 @@ class InstagramAccount extends Account {
     } );
 
     debug( '%s making query with options', this, opts );
-    // trace( this.toString()+' start query' );
 
     return this.api
     .media_searchAsync( lat, long, opts )
@@ -73,39 +75,40 @@ class InstagramAccount extends Account {
     .catch( err => {
       if( err.code===429 ) {
         debug( '%s rate limit', this );
-        // trace( this.toString()+' rate limit' );
 
         // On rate-limit repeat the request
         return Promise
         .delay( WINDOW )
-        // .bind( this )
-        // .tap( ()=> trace( this.toString()+' ready' ) )
         // Redo the same query
         .then( () => this.get( lat, long, radius ) );
       }
 
       debug( '%s error', this, err, err.stack );
-      // trace( this.toString()+' error', err.message );
       // On error do not repeat the request
     } )
 
   }
   geo( points ) {
-    // trace( this.toString()+' get point' );
 
-    let point = points.pop();
+    let point = points.shift();
     // No more points, stream finished
     if( !point ) {
       debug( '%s no more valid points, end', this );
-      // trace( this.toString()+' done points' );
       this.end();
+      this.emit( 'status', { lastLength: null } );
       return;
     }
+    let length = points.length;
 
     debug( '%s query for point(%d): ', this, points.length, point );
 
     this.get( point.latitude, point.longitude, point.radius )
-    .then( ()=> { this.geo( points ); } );
+    .then( ()=> {
+      this.geo( points );
+      this.emit( 'status', {
+        lastLength: length,
+      } );
+    } );
   }
 }
 
