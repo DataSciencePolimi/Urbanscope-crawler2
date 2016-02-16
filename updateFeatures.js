@@ -31,12 +31,13 @@ function* initDB() {
 function* updateMunicipalities( collectionName, municipalities ) {
 
   for( let municipality of municipalities ) {
-    debug( 'Updating municipality for "%s"', municipality.properties.COMUNE );
+    debug( 'Check if must update municipality "%s"', municipality.properties.COMUNE );
 
     let municipalityId = municipality.properties.PRO_COM;
     let geometry = municipality.geometry;
 
     let filter = {
+      municipality: null,
       location: {
         $geoWithin: {
           $geometry: geometry,
@@ -49,7 +50,8 @@ function* updateMunicipalities( collectionName, municipalities ) {
     .find( filter )
     .count();
 
-    debug( 'Updating %d tweets to %s', num, municipalityId );
+    if( num===0 ) continue;
+    debug( 'Updating %d tweets to municipality "%d"', num, municipalityId );
 
     let results = yield db
     .get( collectionName )
@@ -66,12 +68,13 @@ function* updateMunicipalities( collectionName, municipalities ) {
 function* updateNils( collectionName, nils ) {
 
   for( let nil of nils ) {
-    debug( 'Updating nil for "%s"', nil.properties.NIL );
+    debug( 'Check if must update nil "%s"', nil.properties.NIL );
 
     let nilId = nil.properties.ID_NIL;
     let geometry = nil.geometry;
 
     let filter = {
+      nil: null,
       location: {
         $geoWithin: {
           $geometry: geometry,
@@ -84,7 +87,8 @@ function* updateNils( collectionName, nils ) {
     .find( filter )
     .count();
 
-    debug( 'Updating %d tweets to %s', num, nilId );
+    if( num===0 ) continue;
+    debug( 'Updating %d tweets to nil %d', num, nilId );
 
     let results = yield db
     .get( collectionName )
