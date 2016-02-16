@@ -4,13 +4,14 @@
 // Load modules
 let _ = require( 'lodash' );
 let co = require( 'co' );
-let debug = require( 'debug' )( 'UrbanScope:update municipalities' );
+let debug = require( 'debug' )( 'UrbanScope:update' );
 
 // Load my modules
 let db = require( 'db-utils' );
 
 // Constant declaration
 const MUNICIPALITIES = require( './config/milan_municipalities.json' );
+const NILS = require( './config/milan_nils.json' );
 
 const MONGO = require( './config/mongo.json' );
 const COLLECTIONS = MONGO.collections;
@@ -62,6 +63,41 @@ function* updateMunicipalities( collectionName, municipalities ) {
   }
 
 }
+function* updateNils( collectionName, nils ) {
+
+  for( let nil of nils ) {
+    debug( 'Updating nil for "%s"', nil.properties.NIL );
+
+    let nilId = nil.properties.ID_NIL;
+    let geometry = nil.geometry;
+
+    let filter = {
+      location: {
+        $geoWithin: {
+          $geometry: geometry,
+        },
+      }
+    };
+
+    let num = yield db
+    .get( collectionName )
+    .find( filter )
+    .count();
+
+    debug( 'Updating %d tweets to %s', num, nilId );
+
+    let results = yield db
+    .get( collectionName )
+    .updateMany( filter, {
+      $set: {
+        nil: nilId
+      },
+    } );
+
+    debug( 'Update result: %j', results );
+  }
+
+}
 
 // Module class declaration
 
@@ -73,8 +109,12 @@ co( function* () {
   yield initDB();
 
   debug( 'Ready' );
-
   yield updateMunicipalities( COLLECTIONS.posts, _.map( MUNICIPALITIES ) );
+  debug( 'Update municipalities done' );
+
+  yield updateNils( COLLECTIONS.posts, _.map( NILS ) );
+  debug( 'Update nils done' );
+
   debug( 'Update done' );
 } )
 .catch( function( err ) {
