@@ -4,7 +4,6 @@ let stream = require( 'stream' );
 
 // Load modules
 let debug = require( 'debug' )( 'UrbanScope:utils:stream saver' );
-// let trace = require( 'memon' );
 
 // Load my modules
 let db = require( 'db-utils' );
@@ -42,7 +41,6 @@ class Saver extends stream.Writable {
       }
       debug( '%s error', this, err );
     } )
-    // .tap( ()=> trace( 'Save complete' ) )
     .asCallback( cb );
   }
 }

@@ -17,7 +17,7 @@
     "debug": "2.x",
     "instagram-node": "0.5.x",
     "ioredis": "1.x",
-    "lodash": "3.x",
+    "lodash": "4.x",
     "mongodb": "2.x",
     "stream-funnel": "1.x",
     "turf": "2.x",
