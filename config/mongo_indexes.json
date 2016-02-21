@@ -57,6 +57,64 @@
       },
       "name": "source_1",
       "background": true
+    },
+    {
+      "key": {
+        "lang": 1,
+        "nil": 1
+      },
+      "name": "lang_nil_1",
+      "background": true
+    },
+    {
+      "key": {
+        "date": 1,
+        "nil": 1
+      },
+      "name": "date_nil_1",
+      "background": true
+    },
+    {
+      "key": {
+        "lang": 1,
+        "municipality": 1
+      },
+      "name": "lang_municipality_1",
+      "background": true
+    },
+    {
+      "key": {
+        "date": 1,
+        "municipality": 1
+      },
+      "name": "date_municipality_1",
+      "background": true
+    },
+    {
+      "key": {
+        "date": 1,
+        "lang": 1
+      },
+      "name": "date_lang_1",
+      "background": true
+    },
+    {
+      "key": {
+        "date": 1,
+        "lang": 1,
+        "nil": 1
+      },
+      "name": "date_lang_nil_1",
+      "background": true
+    },
+    {
+      "key": {
+        "date": 1,
+        "lang": 1,
+        "municipality": 1
+      },
+      "name": "date_lang_municipality_1",
+      "background": true
     }
   ]
 }
