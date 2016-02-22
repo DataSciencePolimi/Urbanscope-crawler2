@@ -37,11 +37,27 @@ co( function* () {
   debug( 'Open DB' );
   yield db.open( DB_URL, DB_NAME );
 
-  // Verify that all the indexes are in place
+
+
+  debug( 'Drop indexes' );
+  for( let collection of db ) {
+    yield db.get( collection ).dropIndexes();
+  }
+
+
+
   debug( 'Init indexes' );
+  // Verify that all the indexes are in place
   for( let collectionName of _.keys( INDEXES ) ) {
     let indexes = INDEXES[ collectionName ];
     yield db.indexes( collectionName, indexes );
+  }
+
+
+
+  debug( 'Rebuild indexes' );
+  for( let collection of db ) {
+    // yield db.get( collection ).reIndex();
   }
 
   debug( 'DONE' );
