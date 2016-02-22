@@ -4,7 +4,7 @@
       "key": {
         "id": 1
       },
-      "name": "id_1",
+      "name": "ID",
       "unique": true,
       "background": true,
       "dropDups": true
@@ -13,49 +13,49 @@
       "key": {
         "lang": 1
       },
-      "name": "lang_1",
+      "name": "Language",
       "background": true
     },
     {
       "key": {
         "location": "2dsphere"
       },
-      "name": "location_1",
+      "name": "Location",
       "background": true
     },
     {
       "key": {
         "nil": 1
       },
-      "name": "nil_1",
+      "name": "NIL",
       "background": true
     },
     {
       "key": {
         "municipality": 1
       },
-      "name": "municipality_1",
+      "name": "Municipality",
       "background": true
     },
     {
       "key": {
         "date": 1
       },
-      "name": "date_1",
+      "name": "Date",
       "background": true
     },
     {
       "key": {
-        "author": 1
+        "timestamp": 1
       },
-      "name": "author_1",
+      "name": "Timestamp",
       "background": true
     },
     {
       "key": {
         "source": 1
       },
-      "name": "source_1",
+      "name": "Source",
       "background": true
     },
     {
@@ -63,57 +63,7 @@
         "lang": 1,
         "nil": 1
       },
-      "name": "lang_nil_1",
-      "background": true
-    },
-    {
-      "key": {
-        "date": 1,
-        "nil": 1
-      },
-      "name": "date_nil_1",
-      "background": true
-    },
-    {
-      "key": {
-        "lang": 1,
-        "municipality": 1
-      },
-      "name": "lang_municipality_1",
-      "background": true
-    },
-    {
-      "key": {
-        "date": 1,
-        "municipality": 1
-      },
-      "name": "date_municipality_1",
-      "background": true
-    },
-    {
-      "key": {
-        "date": 1,
-        "lang": 1
-      },
-      "name": "date_lang_1",
-      "background": true
-    },
-    {
-      "key": {
-        "date": 1,
-        "lang": 1,
-        "nil": 1
-      },
-      "name": "date_lang_nil_1",
-      "background": true
-    },
-    {
-      "key": {
-        "date": 1,
-        "lang": 1,
-        "municipality": 1
-      },
-      "name": "date_lang_municipality_1",
+      "name": "LanguageNil",
       "background": true
     }
   ]

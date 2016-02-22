@@ -10,7 +10,7 @@
   "author": "Volox",
   "license": "MIT",
   "dependencies": {
-    "@volox/social-post-wrapper": "0.x",
+    "@volox/social-post-wrapper": "1.x",
     "bluebird": "3.x",
     "co": "4.x",
     "db-utils": "volox/node-db-utils",
