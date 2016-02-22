@@ -53,17 +53,18 @@ class InstagramAccount extends Account {
     } else {
       this.send( medias );
 
-      let lastId = medias[ medias.length-1 ].id;
+      let maxTimestamp = medias[ medias.length-1 ].created_time;
       this.emit( 'status', {
-        lastId: lastId,
+        lastId: maxTimestamp,
       } );
     }
 
     // Loop not available for location
   }
-  get( lat, long, radius ) {
+  get( lat, long, radius, maxTimestamp ) {
     let opts = _.assign( {}, DEFAULT_PARAMS, {
       distance: radius,
+      'max_timestamp': maxTimestamp,
     } );
 
     debug( '%s making query with options', this, opts );
@@ -88,7 +89,7 @@ class InstagramAccount extends Account {
     } )
 
   }
-  geo( points ) {
+  geo( points, maxTimestamp ) {
 
     let point = points.shift();
     // No more points, stream finished
@@ -102,9 +103,9 @@ class InstagramAccount extends Account {
 
     debug( '%s query for point(%d): ', this, points.length, point );
 
-    this.get( point.latitude, point.longitude, point.radius )
+    this.get( point.latitude, point.longitude, point.radius, maxTimestamp )
     .then( ()=> {
-      this.geo( points );
+      this.geo( points, maxTimestamp );
       this.emit( 'status', {
         lastLength: length,
       } );

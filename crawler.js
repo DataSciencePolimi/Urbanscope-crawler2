@@ -88,10 +88,12 @@ co( function* () {
 
     // Retrieve the previous state
     let lastTwId = yield redis.hget( 'Twitter', 'lastId' );
+    let lastIgId = yield redis.hget( 'Instagram', 'lastId' );
     let lastIgLength = yield redis.hget( 'Instagram', 'lastLength' );
     lastIgLength = lastIgLength || gridPoints.length;
     debug( 'Last twitter id: %s', lastTwId );
-    debug( 'Last length: %s', lastIgLength );
+    debug( 'Last Instagram id: %s', lastIgId );
+    debug( 'Last Instagram length: %s', lastIgLength );
 
 
     debug( '________--------##### STARTING LOOP #####--------________' );
@@ -118,8 +120,13 @@ co( function* () {
     funnel.add( igStream );
 
     debug( 'Starting providers' );
-    twStream.start( 'place', PLACE_ID, lastTwId );
-    igStream.start( 'geo', points, points.length - Number(lastIgLength) );
+    twStream.start( 'place', PLACE_ID, {
+      lastId: lastTwId,
+    } );
+    igStream.start( 'geo', points, {
+      lastId: lastIgId,
+      startPoint: points.length - Number(lastIgLength),
+    } );
 
 
     // Wait for all the providers to finish, we simply wait for the collector/funnel
@@ -133,7 +140,7 @@ co( function* () {
 
     // Clean redis status
     yield redis.hdel( 'Twitter', 'lastId' );
-    yield redis.hdel( 'Instagram', 'lastId' );
+    yield redis.hdel( 'Instagram', 'maxTimestamp' );
     yield redis.hset( 'Instagram', 'lastLength', gridPoints.length );
 
     // Wait 5 seconds, just in case

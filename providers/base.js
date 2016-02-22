@@ -73,12 +73,13 @@ class Provider extends stream.PassThrough {
       account[ method ].apply( account, args ); // Call function on account
     }
   }
-  geo( points, currentIndex ) {
+  geo( points, status ) {
     if( !Array.isArray( points ) ) {
       points = [ points ];
     }
     debug( '%s: performing geo requests of %d points', this, points.length );
 
+    let currentIndex = status.startPoint;
     currentIndex = Number( currentIndex );
     if( isNaN( currentIndex ) ) {
       currentIndex = 0;
@@ -88,16 +89,17 @@ class Provider extends stream.PassThrough {
     // Use only the pionts needed (also create a shallow copy)
     points = points.slice( currentIndex );
 
-    this._wrapCall( 'geo', points );
+    this._wrapCall( 'geo', points, status.lastId );
   }
-  place( placeId, lastId ) {
+  place( placeId, status ) {
     debug( '%s: performing place requests of %s', this, placeId );
 
-    this._wrapCall( 'place', placeId, lastId );
+    this._wrapCall( 'place', placeId, status.lastId );
   }
 
   // Entry point
   start( action, data, other ) {
+    other = other || {};
     action = ( action || '' ).toLowerCase();
 
     debug( 'Starting action: %s', action );

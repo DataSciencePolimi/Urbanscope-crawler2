@@ -101,7 +101,7 @@ class TwitterAccount extends Account {
 
   }
 
-  geo( points ) {
+  geo( points, lastId ) {
 
     let point = points.shift();
     // No more points, stream finished
@@ -123,9 +123,12 @@ class TwitterAccount extends Account {
     geocode += radius+'km';
     debug( '%s geocode: "%s"', this, geocode );
 
-    this.get( {
+    let options = {
       q: geocode,
-    } )
+      'max_id': lastId,
+    };
+
+    this.get( options )
     .then( ()=> {
       this.geo( points );
       this.emit( 'status', {
