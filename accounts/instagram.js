@@ -95,7 +95,7 @@ class InstagramAccount extends Account {
     if( !point ) {
       debug( '%s no more valid points, end', this );
       this.end();
-      this.emit( 'status', { lastLength: null } );
+      // this.emit( 'status', { lastLength: null } );
       return;
     }
     let length = points.length;

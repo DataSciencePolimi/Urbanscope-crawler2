@@ -108,7 +108,7 @@ class TwitterAccount extends Account {
     if( !point ) {
       debug( '%s no more valid points, end', this );
       this.end();
-      this.emit( 'status', { lastLength: null } );
+      // this.emit( 'status', { lastLength: null } );
       return;
     }
     let length = points.length;
@@ -147,12 +147,14 @@ class TwitterAccount extends Account {
     }
 
 
-    this.get( options )
+    this.get( options );
+    /*
     .then( ()=> {
       this.emit( 'status', {
         lastId: null,
       } );
     } );
+    */
   }
 }
 

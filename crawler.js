@@ -80,36 +80,38 @@ co( function* () {
 
   debug( 'Ready' );
 
-  let points = yield getGridPoints( RADIUS );
-  // points = _.sample( points, 6000 );
+  let gridPoints = yield getGridPoints( RADIUS );
+  // gridPoints = _.sample( gridPoints, 6000 );
 
-  debug( 'Crawling on %d grid points', points.length );
+  debug( 'Crawling on %d grid points', gridPoints.length );
 
   let redis = new Redis( {
     keyPrefix: 'UrbanScope:',
   } );
 
-  // Retrieve the previous state
-  let lastTwId = yield redis.hget( 'Twitter', 'lastId' );
-  let lastIgLength = yield redis.hget( 'Instagram', 'lastLength' );
-  lastIgLength = lastIgLength || points.length;
-
-  debug( 'Last twitter id: %s', lastTwId );
-  debug( 'Last length: %s', lastIgLength );
 
 
   let loopNum = 0;
   // Start endless loop
   while( true ) {
     loopNum += 1;
+    let points = gridPoints.slice();
+
+    // Retrieve the previous state
+    let lastTwId = yield redis.hget( 'Twitter', 'lastId' );
+    let lastIgLength = yield redis.hget( 'Instagram', 'lastLength' );
+    lastIgLength = lastIgLength || gridPoints.length;
+    debug( 'Last twitter id: %s', lastTwId );
+    debug( 'Last length: %s', lastIgLength );
+
 
     debug( '________--------##### STARTING LOOP #####--------________' );
     debug( 'Loop %d started', loopNum );
 
     debug( 'Creating providers' );
     let providers = [];
-    let twStream = new Twitter( TW_KEYS, redis );
-    providers.push( twStream );
+    // let twStream = new Twitter( TW_KEYS, redis );
+    // providers.push( twStream );
     let igStream = new Instagram( IG_KEYS, redis );
     providers.push( igStream );
 
@@ -123,11 +125,11 @@ co( function* () {
     funnel.pipe( saver );
 
     // Collect data from all the providers
-    funnel.add( twStream );
+    // funnel.add( twStream );
     funnel.add( igStream );
 
     debug( 'Starting providers' );
-    twStream.start( 'place', PLACE_ID, lastTwId );
+    // twStream.start( 'place', PLACE_ID, lastTwId );
     igStream.start( 'geo', points, points.length - Number(lastIgLength) );
 
 
@@ -139,11 +141,13 @@ co( function* () {
     debug( 'Loop %d done', loopNum );
     debug( '________--------##### END LOOP #####--------________' );
 
+    yield redis.hdel( 'Twitter', 'lastId' );
+    yield redis.hdel( 'Instagram', 'lastId' );
+    yield redis.hset( 'Instagram', 'lastLength', gridPoints.length );
+
     // Wait 5 seconds, just in case
     yield Promise.delay( 5000 );
   }
-
-
 
 
   debug( 'DONE' );
