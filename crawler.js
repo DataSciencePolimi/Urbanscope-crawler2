@@ -20,7 +20,6 @@ let Saver = require( './utils/stream-saver.js' );
 // Constant declaration
 const CONFIG = require( './config/' );
 const MONGO = require( './config/mongo.json' );
-const INDEXES = require( './config/mongo_indexes.json' );
 const COLLECTIONS = MONGO.collections;
 const DB_URL = MONGO.url;
 const DB_NAME = MONGO.name;
@@ -35,20 +34,6 @@ const RADIUS = CONFIG.radius;
 // Module variables declaration
 
 // Module functions declaration
-function* initDB() {
-  // Add the collection mapping/aliases
-  db.mapping = COLLECTIONS;
-
-  // Open the DB connection
-  yield db.open( DB_URL, DB_NAME );
-
-  // Verify that all the indexes are in place
-  for( let collectionName of _.keys( INDEXES ) ) {
-    let indexes = INDEXES[ collectionName ];
-    yield db.indexes( collectionName, indexes );
-  }
-
-}
 function* getGridPoints( radius ) {
   debug( 'Get grid with %d meters radius', radius );
 
@@ -76,7 +61,11 @@ function* getGridPoints( radius ) {
 
 // Entry point
 co( function* () {
-  yield initDB();
+  // Add the collection mapping/aliases
+  db.mapping = COLLECTIONS;
+
+  // Open the DB connection
+  yield db.open( DB_URL, DB_NAME );
 
   debug( 'Ready' );
 
@@ -110,8 +99,8 @@ co( function* () {
 
     debug( 'Creating providers' );
     let providers = [];
-    // let twStream = new Twitter( TW_KEYS, redis );
-    // providers.push( twStream );
+    let twStream = new Twitter( TW_KEYS, redis );
+    providers.push( twStream );
     let igStream = new Instagram( IG_KEYS, redis );
     providers.push( igStream );
 
@@ -125,11 +114,11 @@ co( function* () {
     funnel.pipe( saver );
 
     // Collect data from all the providers
-    // funnel.add( twStream );
+    funnel.add( twStream );
     funnel.add( igStream );
 
     debug( 'Starting providers' );
-    // twStream.start( 'place', PLACE_ID, lastTwId );
+    twStream.start( 'place', PLACE_ID, lastTwId );
     igStream.start( 'geo', points, points.length - Number(lastIgLength) );
 
 
@@ -141,6 +130,8 @@ co( function* () {
     debug( 'Loop %d done', loopNum );
     debug( '________--------##### END LOOP #####--------________' );
 
+
+    // Clean redis status
     yield redis.hdel( 'Twitter', 'lastId' );
     yield redis.hdel( 'Instagram', 'lastId' );
     yield redis.hset( 'Instagram', 'lastLength', gridPoints.length );
