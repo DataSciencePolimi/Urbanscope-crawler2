@@ -64,7 +64,7 @@ class InstagramAccount extends Account {
   get( lat, long, radius, maxTimestamp ) {
     let opts = _.assign( {}, DEFAULT_PARAMS, {
       distance: radius,
-      'max_timestamp': maxTimestamp,
+      // 'max_timestamp': maxTimestamp,
     } );
 
     debug( '%s making query with options', this, opts );
