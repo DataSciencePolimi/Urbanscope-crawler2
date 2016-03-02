@@ -19,6 +19,7 @@ let Saver = require( './utils/stream-saver.js' );
 
 // Constant declaration
 const CONFIG = require( './config/' );
+const REDIS_CONFIG = require( './config/redis.json' );
 const MONGO = require( './config/mongo.json' );
 const COLLECTIONS = MONGO.collections;
 const DB_URL = MONGO.url;
@@ -74,9 +75,7 @@ co( function* () {
 
   debug( 'Crawling on %d grid points', gridPoints.length );
 
-  let redis = new Redis( {
-    keyPrefix: 'UrbanScope:',
-  } );
+  let redis = new Redis( REDIS_CONFIG );
 
 
 
