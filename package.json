@@ -24,6 +24,9 @@
     "twit": "2.x"
   },
   "devDependencies": {
-    "eslint-config-volox": "*"
+    "del": "^2.2.0",
+    "eslint-config-volox": "*",
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.2.2"
   }
 }
