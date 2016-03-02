@@ -35,7 +35,9 @@ class InstagramAccount extends Account {
   getApi( key ) {
     debug( '%s get api for', this, key );
 
-    let api = ig();
+    let api = ig( {
+      agent: this.agent,
+    } );
     api.use( key );
 
     return Promise.promisifyAll( api, {
