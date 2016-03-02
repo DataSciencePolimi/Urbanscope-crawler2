@@ -19,6 +19,10 @@ const DEPLOY_PASSWORD = 'AQYeaRV3dh';
 const DESTINATION = path.resolve( __dirname, 'deploy' );
 const SOURCE = [
   '**',
+  '!test/**',
+  '!test/',
+  '!deploy/**',
+  '!deploy/',
   '!gulpfile.js',
   '!todo.md',
 ];
