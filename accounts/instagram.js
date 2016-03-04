@@ -4,6 +4,7 @@
 // Load modules
 let _ = require( 'lodash' );
 let ig = require( 'instagram-node' ).instagram;
+let HttpProxyAgent = require( 'https-proxy-agent' );
 let Promise = require( 'bluebird' );
 let debug = require( 'debug' )( 'UrbanScope:accounts:Instagram' );
 
@@ -35,9 +36,16 @@ class InstagramAccount extends Account {
   getApi( key ) {
     debug( '%s get api for', this, key );
 
-    let api = ig( {
-      agent: this.agent,
-    } );
+    let proxy = process.env.http_proxy
+                || process.env.HTTP_PROXY
+                || process.env.https_proxy
+                || process.env.HTTPS_PROXY;
+
+    let options = {};
+    if( proxy ) {
+      options.agent = new HttpProxyAgent( proxy );
+    }
+    let api = ig( options );
     api.use( key );
 
     return Promise.promisifyAll( api, {

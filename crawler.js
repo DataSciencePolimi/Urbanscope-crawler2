@@ -76,6 +76,9 @@ co( function* () {
   debug( 'Crawling on %d grid points', gridPoints.length );
 
   let redis = new Redis( REDIS_CONFIG );
+  yield redis.hdel( 'Twitter', 'lastId' );
+  yield redis.hdel( 'Instagram', 'maxTimestamp' );
+  yield redis.hset( 'Instagram', 'lastLength', gridPoints.length );
 
 
 

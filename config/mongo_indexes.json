@@ -65,6 +65,14 @@
       },
       "name": "LanguageNil",
       "background": true
+    },
+    {
+      "key": {
+        "lang": 1,
+        "municipality": 1
+      },
+      "name": "LanguageMunicipality",
+      "background": true
     }
   ]
 }

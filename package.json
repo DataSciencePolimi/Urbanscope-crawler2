@@ -4,7 +4,6 @@
   "private": true,
   "description": "UrbanScope crawler",
   "scripts": {
-    "trace-crawler": "node -r memon crawler",
     "crawler": "node crawler"
   },
   "author": "Volox",
@@ -15,8 +14,8 @@
     "co": "4.x",
     "db-utils": "volox/node-db-utils",
     "debug": "2.x",
-    "https-proxy-agent": "^1.0.0",
-    "instagram-node": "0.5.x",
+    "https-proxy-agent": "1.x",
+    "instagram-node": "volox/instagram-node",
     "ioredis": "1.x",
     "lodash": "4.x",
     "mongodb": "2.x",
@@ -30,6 +29,7 @@
     "gulp": "*",
     "gulp-json-editor": "*",
     "gulp-rename": "*",
+    "gulp-run": "*",
     "run-sequence": "*"
   }
 }

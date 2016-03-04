@@ -2,7 +2,6 @@
 // Load system modules
 
 // Load modules
-let HttpsProxyAgent = require( 'https-proxy-agent' );
 let debug = require( 'debug' )( 'UrbanScope:providers:Instagram' );
 
 // Load my modules
@@ -21,13 +20,7 @@ class Instagram extends Provider {
   constructor( keys, redis ) {
     super( 'Instagram', keys, redis );
 
-    let proxy = process.env.http_proxy || process.env.HTTPS_PROXY;
-    if( proxy ) {
-      debug( 'Proxy set to: %s', proxy );
-      this.agent = new HttpsProxyAgent( proxy );
-    }
-
-    debug( 'Done' );
+    debug( 'Constructor done' );
   }
 
   // Overrides
