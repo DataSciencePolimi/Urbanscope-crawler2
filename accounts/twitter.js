@@ -32,7 +32,7 @@ class TwitterAccount extends Account {
   constructor( key ) {
     super( 'Twitter '+(i++), key );
 
-    debug( 'Done' );
+    debug( 'Constructor done' );
   }
 
   // Overrides
@@ -67,6 +67,7 @@ class TwitterAccount extends Account {
 
     let metadata = data.search_metadata;
     debug( '%s got meta', this, metadata );
+
     if( metadata.next_results ) {
       let params = metadata.next_results.slice( 1 );
       let query = querystring.parse( params );
