@@ -18,7 +18,9 @@
     "instagram-node": "volox/instagram-node",
     "ioredis": "1.x",
     "lodash": "4.x",
+    "moment": "2.x",
     "mongodb": "2.x",
+    "request": "2.x",
     "stream-funnel": "1.x",
     "turf": "2.x",
     "twit": "2.x"
