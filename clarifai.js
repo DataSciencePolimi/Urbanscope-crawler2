@@ -19,15 +19,17 @@ const MONTH_LIMIT = CLARIFAI.monthLimit;
 const CLIENT_ID = CLARIFAI.key.clientId;
 const CLIENT_SECRET = CLARIFAI.key.clientSecret;
 const CLARIFAI_MODEL = CLARIFAI.model;
-const NUM_DAYS = 31; // Better to exceed
 
 const MONGO = require( './config/mongo.json' );
 const COLLECTIONS = MONGO.collections;
 const DB_URL = MONGO.url;
 const DB_NAME = MONGO.name;
 
+const DATE_FORMAT = 'YYYY-MM-DD';
 const API_HOSTNAME = 'api.clarifai.com';
 const API_BASEPATH = '/v1/';
+const NUM_DAYS = 31; // Better to exceed
+const DAYS_BEFORE = 3; // Let the crawler finish
 
 
 // Module variables declaration
@@ -101,15 +103,39 @@ function* getApplicationToken( req ) {
 function calcTopPhotos() {
   return Math.floor( MONTH_LIMIT/NUM_DAYS ) - 1;
 }
-function* getBestOfToday( max ) {
-  let todayStart = moment().startOf( 'day' ).toDate().getTime();
-  let todayEnd = moment().endOf( 'day' ).toDate().getTime();
+function* checkImage( image ) {
+  debug( 'Checking image: %s', image.link );
+
+  // Promisifty request
+  let r = Promise.promisify( request, { multiArgs: true } );
+
+  let data = yield r( {
+    method: 'HEAD',
+    uri: image.link,
+    qs: { size: 't' },
+    headers: {
+      Host: 'www.instagram.com',
+    },
+  } );
+
+  let res = data[ 0 ];
+  debug( 'Image(%s) status: %s', image.id, res.statusCode );
+  return res.statusCode===200;
+}
+function* getBestOfDay( day, max ) {
+  let dayStart = moment( day )
+  .subtract( DAYS_BEFORE, 'days' )
+  .startOf( 'day' );
+  let dayEnd = moment.utc( dayStart )
+  .endOf( 'day' );
+
+  debug( 'Requesting best from %s to %s', dayStart.format( DATE_FORMAT ), dayEnd.format( DATE_FORMAT ) );
 
   let top = yield db.find( 'posts', {
     source: 'instagram',
     timestamp: {
-      $gte: todayStart,
-      $lte: todayEnd,
+      $gte: dayStart.toDate().getTime(),
+      $lte: dayEnd.toDate().getTime(),
     },
     clarifaiTags: null,
   } )
@@ -169,18 +195,27 @@ co( function* () {
 
 
   // Get todays top photos
-  let bestOfToday = yield getBestOfToday( maxDailiyRequest );
-  debug( 'Best of: ', bestOfToday );
+  let day = moment.utc().subtract( DAYS_BEFORE, 'days' );
+  let bestOfDay = yield getBestOfDay( day, maxDailiyRequest );
+  debug( 'Best of %s: ', day.format( DATE_FORMAT ) , bestOfDay );
 
-  for( let image of bestOfToday ) {
+  for( let image of bestOfDay ) {
     let id = image.id;
     let likes = image.likes;
     debug( 'Requesting tags for %s(%d)', id, likes );
 
-    let tags = yield getTags( req, token, image );
+    let imageAvailable = yield checkImage( image );
 
-    debug( 'Got tags', tags );
-    yield updateImage( id, tags );
+    if( imageAvailable ) {
+      debug( 'Image available :)' );
+      let tags = yield getTags( req, token, image );
+
+      debug( 'Got tags', tags );
+      yield updateImage( id, tags );
+    } else {
+      debug( 'Image not available :(' );
+    }
+
   }
 
   debug( 'Clarifai done' );
