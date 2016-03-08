@@ -55,12 +55,12 @@ function* getGridPoints( radius ) {
   return points;
 }
 function* removeStatus( redis ) {
-  // yield redis.del( 'Twitter' );
+  yield redis.del( 'Twitter' );
   yield redis.del( 'Instagram' );
 }
 function* resetStatus( redis, points ) {
-  // yield redis.hdel( 'Twitter', 'lastId' );
-  // yield redis.hdel( 'Instagram', 'maxTimestamp' );
+  yield redis.hdel( 'Twitter', 'lastId' );
+  yield redis.hdel( 'Instagram', 'maxTimestamp' );
   yield redis.hset( 'Instagram', 'lastLength', points );
 
 }
@@ -111,8 +111,8 @@ co( function* () {
     let providers = [];
     let twStream = new Twitter( TW_KEYS, redis );
     providers.push( twStream );
-    // let igStream = new Instagram( IG_KEYS, redis );
-    // providers.push( igStream );
+    let igStream = new Instagram( IG_KEYS, redis );
+    providers.push( igStream );
 
     // Create stream saver
     let saver = new Saver( `${COLLECTION} saver`, COLLECTION );
@@ -131,10 +131,10 @@ co( function* () {
     twStream.start( 'place', PLACE_ID, {
       lastId: lastTwId,
     } );
-    // igStream.start( 'geo', points, {
-    //   lastId: lastIgId,
-    //   startPoint: points.length - Number(lastIgLength),
-    // } );
+    igStream.start( 'geo', points, {
+      lastId: lastIgId,
+      startPoint: points.length - Number(lastIgLength),
+    } );
 
 
     // Wait for all the providers to finish, we simply wait for the collector/funnel
