@@ -54,7 +54,16 @@ function* getGridPoints( radius ) {
   debug( 'Generated %d points', points.length );
   return points;
 }
+function* removeStatus( redis ) {
+  // yield redis.del( 'Twitter' );
+  yield redis.del( 'Instagram' );
+}
+function* resetStatus( redis, points ) {
+  // yield redis.hdel( 'Twitter', 'lastId' );
+  // yield redis.hdel( 'Instagram', 'maxTimestamp' );
+  yield redis.hset( 'Instagram', 'lastLength', points );
 
+}
 // Module class declaration
 
 // Module initialization (at first load)
@@ -76,10 +85,7 @@ co( function* () {
   debug( 'Crawling on %d grid points', gridPoints.length );
 
   let redis = new Redis( REDIS_CONFIG );
-  yield redis.hdel( 'Twitter', 'lastId' );
-  yield redis.hdel( 'Instagram', 'maxTimestamp' );
-  yield redis.hset( 'Instagram', 'lastLength', gridPoints.length );
-
+  yield removeStatus( redis );
 
 
   let loopNum = 0;
@@ -105,8 +111,8 @@ co( function* () {
     let providers = [];
     let twStream = new Twitter( TW_KEYS, redis );
     providers.push( twStream );
-    let igStream = new Instagram( IG_KEYS, redis );
-    providers.push( igStream );
+    // let igStream = new Instagram( IG_KEYS, redis );
+    // providers.push( igStream );
 
     // Create stream saver
     let saver = new Saver( `${COLLECTION} saver`, COLLECTION );
@@ -119,16 +125,16 @@ co( function* () {
 
     // Collect data from all the providers
     funnel.add( twStream );
-    funnel.add( igStream );
+    // funnel.add( igStream );
 
     debug( 'Starting providers' );
     twStream.start( 'place', PLACE_ID, {
       lastId: lastTwId,
     } );
-    igStream.start( 'geo', points, {
-      lastId: lastIgId,
-      startPoint: points.length - Number(lastIgLength),
-    } );
+    // igStream.start( 'geo', points, {
+    //   lastId: lastIgId,
+    //   startPoint: points.length - Number(lastIgLength),
+    // } );
 
 
     // Wait for all the providers to finish, we simply wait for the collector/funnel
@@ -141,9 +147,7 @@ co( function* () {
 
 
     // Clean redis status
-    yield redis.hdel( 'Twitter', 'lastId' );
-    yield redis.hdel( 'Instagram', 'maxTimestamp' );
-    yield redis.hset( 'Instagram', 'lastLength', gridPoints.length );
+    yield resetStatus( redis, gridPoints.length );
 
     // Wait 5 seconds, just in case
     yield Promise.delay( 5000 );

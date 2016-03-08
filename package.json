@@ -4,6 +4,8 @@
   "private": true,
   "description": "UrbanScope crawler",
   "scripts": {
+    "clarifai": "node clarifai",
+    "features": "node updateFeatures",
     "crawler": "node crawler"
   },
   "author": "Volox",

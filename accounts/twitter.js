@@ -151,14 +151,8 @@ class TwitterAccount extends Account {
     }
 
 
-    this.get( options );
-    /*
-    .then( ()=> {
-      this.emit( 'status', {
-        lastId: null,
-      } );
-    } );
-    */
+    this.get( options )
+    .then( ()=> this.end() )
   }
 }
 
