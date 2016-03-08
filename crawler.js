@@ -125,7 +125,7 @@ co( function* () {
 
     // Collect data from all the providers
     funnel.add( twStream );
-    // funnel.add( igStream );
+    funnel.add( igStream );
 
     debug( 'Starting providers' );
     twStream.start( 'place', PLACE_ID, {
