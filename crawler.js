@@ -16,6 +16,10 @@ let Twitter = require( './providers/twitter' );
 let Instagram = require( './providers/instagram' );
 let streamToPromise = require( './utils/stream-to-promise.js' );
 let Saver = require( './utils/stream-saver.js' );
+let NilIdentifier = require( './utils/stream-identify-nil.js' );
+let MunicipalityIdentifier = require( './utils/stream-identify-municipality.js' );
+let IncrMonthCount = require( './utils/stream-incr-month-redis.js' );
+let IncrAnomalyCount = require( './utils/stream-incr-anomaly-redis.js' );
 
 // Constant declaration
 const CONFIG = require( './config/' );
@@ -115,13 +119,24 @@ co( function* () {
     providers.push( igStream );
 
     // Create stream saver
-    let saver = new Saver( `${COLLECTION} saver`, COLLECTION );
+    let saveToDb = new Saver( `${COLLECTION} saver`, COLLECTION );
+    let nilIdentifier = new NilIdentifier();
+    let municipalityIdentifier = new MunicipalityIdentifier();
+    let incrMonthCount = new IncrMonthCount( redis );
+    let incrNilAnomalyCount = new IncrAnomalyCount( 'nil', redis );
+    let incrMunicipalityAnomalyCount = new IncrAnomalyCount( 'municipality', redis );
 
     // Create funnel to collect all data
     let funnel = new Funnel( `Funnel loop ${loopNum}` );
 
     // push the data recieved in the saver stream
-    funnel.pipe( saver );
+    let waitStream = funnel
+    .pipe( municipalityIdentifier )
+    .pipe( nilIdentifier )
+    .pipe( incrMonthCount )
+    .pipe( incrNilAnomalyCount )
+    .pipe( incrMunicipalityAnomalyCount )
+    .pipe( saveToDb );
 
     // Collect data from all the providers
     funnel.add( twStream );
@@ -138,7 +153,7 @@ co( function* () {
 
 
     // Wait for all the providers to finish, we simply wait for the collector/funnel
-    let waitPromise = streamToPromise( saver );
+    let waitPromise = streamToPromise( waitStream );
     debug( 'Waiting the stream to end' );
     yield waitPromise;
 
