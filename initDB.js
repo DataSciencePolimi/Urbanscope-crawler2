@@ -38,16 +38,20 @@ co( function* () {
   yield db.open( DB_URL, DB_NAME );
 
 
+  // Create the collection
+  debug( 'Create collection' );
+  yield db.connection.createCollection( 'posts' );
 
+
+  // Drop indexes
   debug( 'Drop indexes' );
   for( let collection of db ) {
     yield db.get( collection ).dropIndexes();
   }
 
 
-
-  debug( 'Init indexes' );
   // Verify that all the indexes are in place
+  debug( 'Init indexes' );
   for( let collectionName of _.keys( INDEXES ) ) {
     let indexes = INDEXES[ collectionName ];
     yield db.indexes( collectionName, indexes );
@@ -56,9 +60,9 @@ co( function* () {
 
 
   debug( 'Rebuild indexes' );
-  for( let collection of db ) {
+  // for( let collection of db ) {
     // yield db.get( collection ).reIndex();
-  }
+  // }
 
   debug( 'DONE' );
 } )
