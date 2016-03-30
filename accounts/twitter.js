@@ -12,6 +12,7 @@ let debug = require( 'debug' )( 'UrbanScope:accounts:Twitter' );
 let Account = require( './base' );
 
 // Constant declaration
+const SOFT_WINDOW = 1000*5; // 5 Seconds
 const WINDOW = 1000*60*15; // 15 Minutes
 const DEFAULT_PARAMS = {
   count: 100,
@@ -92,6 +93,14 @@ class TwitterAccount extends Account {
         // On rate-limit repeat the request
         return Promise
         .delay( WINDOW )
+        // Redo the same query
+        .then( () => this.get( query ) );
+      } else if( err.errno==='ETIMEDOUT' ) {
+        debug( '%s timeout, retry', this );
+
+        // Repeat the request
+        return Promise
+        .delay( SOFT_WINDOW ) // Wait, Just in case
         // Redo the same query
         .then( () => this.get( query ) );
       }

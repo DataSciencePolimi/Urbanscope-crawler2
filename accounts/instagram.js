@@ -12,6 +12,7 @@ let debug = require( 'debug' )( 'UrbanScope:accounts:Instagram' );
 let Account = require( './base' );
 
 // Constant declaration
+const SOFT_WINDOW = 1000*5; // 5 Seconds
 const WINDOW = 1000*60*60; // 1h
 const DEFAULT_PARAMS = {
   count: 100, // Only 33 in reality :(
@@ -90,6 +91,14 @@ class InstagramAccount extends Account {
         // On rate-limit repeat the request
         return Promise
         .delay( WINDOW )
+        // Redo the same query
+        .then( () => this.get( lat, long, radius ) );
+      } else if( err.errno==='ETIMEDOUT' ) {
+        debug( '%s timeout, retry', this );
+
+        // Repeat the request
+        return Promise
+        .delay( SOFT_WINDOW ) // Wait, Just in case
         // Redo the same query
         .then( () => this.get( lat, long, radius ) );
       }
