@@ -26,7 +26,7 @@ class NilIdentifier extends stream.Transform {
   _transform( post, enc, cb ) {
 
     // Check only in Milan area
-    if( post.municipality===MILAN_MUNICIPALITY ) {
+    if( post.municipality===MILAN_MUNICIPALITY && post.location ) {
       const point = {
         type: 'Feature',
         geometry: post.location,
