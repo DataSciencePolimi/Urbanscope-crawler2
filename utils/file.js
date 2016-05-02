@@ -1,10 +1,10 @@
 'use strict';
 // Load system modules
-let path = require( 'path' );
-let fs = require( 'fs' );
+const path = require( 'path' );
+const fs = require( 'fs' );
 
 // Load modules
-let debug = require( 'debug' )( 'UrbanScope:utils:file' );
+const debug = require( 'debug' )( 'UrbanScope:utils:file' );
 
 // Load my modules
 
@@ -15,21 +15,21 @@ let debug = require( 'debug' )( 'UrbanScope:utils:file' );
 
 // Module functions declaration
 function getLocation( folder, fileName ) {
-  let fullPath = path.resolve( __dirname, '..', folder, fileName );
+  const fullPath = path.resolve( __dirname, '..', folder, fileName );
   return fullPath;
 }
 function* loadJSON( folder, fileName ) {
   debug( 'Loading "%s" in "%s"', fileName, folder );
-  let fullPath = getLocation( folder, fileName );
-  let gridPoints = require( fullPath );
+  const fullPath = getLocation( folder, fileName );
+  const gridPoints = require( fullPath );
 
   return gridPoints;
 }
 function* saveJSON( folder, fileName, data ) {
   debug( 'Saving "%s" in "%s"', fileName, folder );
-  let fullPath = getLocation( folder, fileName );
+  const fullPath = getLocation( folder, fileName );
 
-  let json = JSON.stringify( data, null, 2 );
+  const json = JSON.stringify( data, null, 2 );
   fs.writeFileSync( fullPath, json, 'utf8' );
 }
 

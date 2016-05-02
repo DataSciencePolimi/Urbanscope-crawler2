@@ -1,11 +1,11 @@
 'use strict';
 // Load system modules
-let stream = require( 'stream' );
+const stream = require( 'stream' );
 
 // Load modules
-let _ = require( 'lodash' );
-let turf = require( 'turf' );
-let debug = require( 'debug' )( 'UrbanScope:utils:stream municipality identifier' );
+const _ = require( 'lodash' );
+const turf = require( 'turf' );
+const debug = require( 'debug' )( 'UrbanScope:utils:stream municipality identifier' );
 
 // Load my modules
 
@@ -24,7 +24,7 @@ class MunicipalityIdentifier extends stream.Transform {
   }
 
   _transform( post, enc, cb ) {
-    let point = {
+    const point = {
       type: 'Feature',
       geometry: post.location,
     };
@@ -33,8 +33,8 @@ class MunicipalityIdentifier extends stream.Transform {
     if( point.geometry ) {
 
       // Got location, check the municipality
-      for( let municipality of MUNICIPALITIES ) {
-        let municipalityId = municipality.properties.PRO_COM;
+      for( const municipality of MUNICIPALITIES ) {
+        const municipalityId = municipality.properties.PRO_COM;
 
         if( turf.inside( point, municipality ) ) {
           debug( 'Found municipality %d', municipalityId );

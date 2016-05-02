@@ -28,6 +28,7 @@ lib-cov
 
 # Do not sync dependencies
 node_modules
+typings
 
 # Do not sync deploy
 deploy

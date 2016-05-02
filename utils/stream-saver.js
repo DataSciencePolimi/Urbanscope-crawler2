@@ -1,12 +1,12 @@
 'use strict';
 // Load system modules
-let stream = require( 'stream' );
+const stream = require( 'stream' );
 
 // Load modules
-let debug = require( 'debug' )( 'UrbanScope:utils:stream saver' );
+const debug = require( 'debug' )( 'UrbanScope:utils:stream saver' );
 
 // Load my modules
-let db = require( 'db-utils' );
+const db = require( 'db-utils' );
 
 // Constant declaration
 

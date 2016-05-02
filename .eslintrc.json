@@ -1,0 +1,5 @@
+{
+  "extends": "volox",
+  "no-var": true,
+  "prefer-spread": true
+}

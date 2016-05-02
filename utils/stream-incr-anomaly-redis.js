@@ -4,7 +4,7 @@ let stream = require( 'stream' );
 
 // Load modules
 let _ = require( 'lodash' );
-let debug = require( 'debug' )( 'UrbanScope:utils:stream increment anomaly count' );
+// let debug = require( 'debug' )( 'UrbanScope:utils:stream increment anomaly count' );
 
 // Load my modules
 

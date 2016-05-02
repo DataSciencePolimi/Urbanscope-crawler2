@@ -1,9 +1,9 @@
 'use strict';
 // Load system modules
-let stream = require( 'stream' );
+const stream = require( 'stream' );
 
 // Load modules
-let debug = require( 'debug' )( 'UrbanScope:utils:stream increment monthly count' );
+// const debug = require( 'debug' )( 'UrbanScope:utils:stream increment monthly count' );
 
 // Load my modules
 
@@ -23,24 +23,24 @@ class IncrMonthCount extends stream.Transform {
   }
 
   getKey( post ) {
-    let lang = post.lang;
+    const lang = post.lang;
     return `${KEY}-${lang}`;
   }
   getField( post ) {
-    let date = post.date;
-    let year = date.getUTCFullYear();
-    let month = date.getUTCMonth() + 1;
+    const date = post.date;
+    const year = date.getUTCFullYear();
+    const month = date.getUTCMonth() + 1;
     return `${year}-${month}`;
   }
 
 
   _transform( post, enc, cb ) {
-    let isTwitter = post.source==='twitter';
-    let lang = post.lang;
+    const isTwitter = post.source==='twitter';
+    const lang = post.lang;
 
     if( isTwitter && lang && lang!=='und' ) {
-      let key = this.getKey( post );
-      let field = this.getField( post );
+      const key = this.getKey( post );
+      const field = this.getField( post );
       return this.redis
       .hincrby( key, field, 1 )
       .return( post )

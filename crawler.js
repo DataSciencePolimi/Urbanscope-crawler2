@@ -2,24 +2,21 @@
 // Load system modules
 
 // Load modules
-let _ = require( 'lodash' );
-let co = require( 'co' );
-let Promise = require( 'bluebird' );
-let debug = require( 'debug' )( 'UrbanScope:crawler' );
-let Funnel = require( 'stream-funnel' );
-let Redis = require( 'ioredis' );
+const _ = require( 'lodash' );
+const co = require( 'co' );
+const Promise = require( 'bluebird' );
+const debug = require( 'debug' )( 'UrbanScope:crawler' );
+const Funnel = require( 'stream-funnel' );
+const Redis = require( 'ioredis' );
 
 // Load my modules
-let db = require( 'db-utils' );
-let grid = require( './grid/' );
-let Twitter = require( './providers/twitter' );
-let Instagram = require( './providers/instagram' );
-let streamToPromise = require( './utils/stream-to-promise.js' );
-let Saver = require( './utils/stream-saver.js' );
-let NilIdentifier = require( './utils/stream-identify-nil.js' );
-let MunicipalityIdentifier = require( './utils/stream-identify-municipality.js' );
-let IncrMonthCount = require( './utils/stream-incr-month-redis.js' );
-let IncrAnomalyCount = require( './utils/stream-incr-anomaly-redis.js' );
+const db = require( 'db-utils' );
+const grid = require( './grid/' );
+const Twitter = require( './providers/twitter' );
+const Instagram = require( './providers/instagram' );
+const streamToPromise = require( './utils/stream-to-promise.js' );
+const Saver = require( './utils/stream-saver.js' );
+const pipeline = require( './pipeline' );
 
 // Constant declaration
 const CONFIG = require( './config/' );
@@ -93,8 +90,9 @@ co( function* () {
 
 
   let loopNum = 0;
+
   // Start endless loop
-  while( true ) {
+  for(;;) {
     loopNum += 1;
     let points = gridPoints.slice();
 
@@ -112,30 +110,17 @@ co( function* () {
     debug( 'Loop %d started', loopNum );
 
     debug( 'Creating providers' );
-    let providers = [];
     let twStream = new Twitter( TW_KEYS, redis );
-    providers.push( twStream );
     let igStream = new Instagram( IG_KEYS, redis );
-    providers.push( igStream );
 
     // Create stream saver
     let saveToDb = new Saver( `${COLLECTION} saver`, COLLECTION );
-    let nilIdentifier = new NilIdentifier();
-    let municipalityIdentifier = new MunicipalityIdentifier();
-    let incrMonthCount = new IncrMonthCount( redis );
-    let incrNilAnomalyCount = new IncrAnomalyCount( 'nil', redis );
-    let incrMunicipalityAnomalyCount = new IncrAnomalyCount( 'municipality', redis );
 
     // Create funnel to collect all data
     let funnel = new Funnel( `Funnel loop ${loopNum}` );
 
     // push the data recieved in the saver stream
-    let waitStream = funnel
-    .pipe( municipalityIdentifier )
-    .pipe( nilIdentifier )
-    .pipe( incrMonthCount )
-    .pipe( incrNilAnomalyCount )
-    .pipe( incrMunicipalityAnomalyCount )
+    let waitStream = pipeline( funnel, redis )
     .pipe( saveToDb );
 
     // Collect data from all the providers
@@ -167,9 +152,6 @@ co( function* () {
     // Wait 5 seconds, just in case
     yield Promise.delay( 5000 );
   }
-
-
-  debug( 'DONE' );
 } )
 .catch( function( err ) {
   debug( 'FUUUUU', err, err.stack );

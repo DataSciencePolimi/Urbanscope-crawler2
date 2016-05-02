@@ -1,24 +1,23 @@
 {
-  "name": "UrbanScope-crawler",
+  "name": "urbanscope-crawler",
   "version": "3.0.0",
   "private": true,
   "description": "UrbanScope crawler",
   "scripts": {
-    "clarifai": "node clarifai",
-    "features": "node updateFeatures",
+    "start": "npm run crawler",
     "crawler": "node crawler"
   },
   "author": "Volox",
   "license": "MIT",
   "dependencies": {
-    "@volox/social-post-wrapper": "1.x",
+    "@volox/social-post-wrapper": "2.x",
     "bluebird": "3.x",
     "co": "4.x",
     "db-utils": "volox/node-db-utils",
     "debug": "2.x",
     "https-proxy-agent": "1.x",
     "instagram-node": "volox/instagram-node",
-    "ioredis": "1.x",
+    "ioredis": "^2.0.0-rc2",
     "lodash": "4.x",
     "moment": "2.x",
     "mongodb": "2.x",

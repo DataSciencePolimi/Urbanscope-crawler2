@@ -1,0 +1,10 @@
+{
+  "name": "urbanscope-crawler",
+  "version": false,
+  "dependencies": {
+    "csv-parse": "registry:npm/csv-parse#1.0.2+20160405213407"
+  },
+  "ambientDependencies": {
+    "node": "registry:dt/node#4.0.0+20160423143914"
+  }
+}

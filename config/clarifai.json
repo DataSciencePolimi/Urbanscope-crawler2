@@ -1,9 +1,0 @@
-{
-  "key": {
-    "clientId": "HSeeDiM3n1SU0tV-LtA2O8suW8yYB47LnwxadlPV",
-    "clientSecret": "tjs6hNPLaLy2vavua56py5QV5MsUGTMPpc7507NL"
-  },
-  "model": "general-v1.3",
-  "monthLimit": 5000,
-  "hourLimit": 100
-}

@@ -1,10 +1,10 @@
 'use strict';
 // Load system modules
-let stream = require( 'stream' );
+const stream = require( 'stream' );
 
 // Load modules
-let wrapPost = require( '@volox/social-post-wrapper' );
-let debug = require( 'debug' )( 'UrbanScope:utils:stream wrapper' );
+const wrapPost = require( '@volox/social-post-wrapper' ).default;
+const debug = require( 'debug' )( 'UrbanScope:utils:stream wrapper' );
 
 // Load my modules
 
@@ -35,7 +35,7 @@ class Saver extends stream.Transform {
   _transform( data, enc, cb ) {
     debug( '%s wrapping', this, data.id );
 
-    let post = wrapPost( data, this.provider, WRAP_OPTS );
+    const post = wrapPost( data, this.provider, WRAP_OPTS );
     return cb( null, post );
   }
 }

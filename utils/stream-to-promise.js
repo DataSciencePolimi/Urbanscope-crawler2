@@ -2,8 +2,8 @@
 // Load system modules
 
 // Load modules
-let Promise = require( 'bluebird' );
-let debug = require( 'debug' )( 'UrbanScope:utils:stream to promise' );
+const Promise = require( 'bluebird' );
+const debug = require( 'debug' )( 'UrbanScope:utils:stream to promise' );
 
 // Load my modules
 
@@ -16,32 +16,15 @@ let debug = require( 'debug' )( 'UrbanScope:utils:stream to promise' );
 function streamToPromise( stream, emitErrors ) {
   debug( 'Converting "%s" to promise', stream );
 
-  // stream.on( 'end', () => debug( '%s ended', stream ) );
-  // stream.on( 'finish', () => debug( '%s finish', stream ) );
-  // stream.on( 'error', () => debug( '%s error', stream ) );
-
   // Create a Promise that will be resolved when the stream
   // emits the 'end' (or 'finish') event
-  let promise = new Promise( ( res, rej )=> {
+  const promise = new Promise( ( res, rej )=> {
 
-    stream.on( 'end', res );
-    stream.on( 'finish', res );
-    /*
-    if( stream.readable ) {
-      stream.on( 'end', ()=> {
-        debug( '%s resolved(end)', this );
-        res();
-      } );
-    } else if( stream.writable ) {
-      stream.on( 'finish', () => {
-        debug( '%s resolved(finish)', this );
-        res();
-      } );
-    }
-    */
+    stream.once( 'end', res );
+    stream.once( 'finish', res );
 
     if( emitErrors===true ) {
-      stream.on( 'error', rej );
+      stream.once( 'error', rej );
     }
   } );
 
