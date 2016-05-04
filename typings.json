@@ -2,9 +2,18 @@
   "name": "urbanscope-crawler",
   "version": false,
   "dependencies": {
-    "csv-parse": "registry:npm/csv-parse#1.0.2+20160405213407"
+    "bluebird": "registry:npm/bluebird#3.3.4+20160427051630",
+    "csv-parse": "registry:npm/csv-parse#1.0.2+20160405213407",
+    "debug": "registry:npm/debug#2.0.0+20160211003958",
+    "lodash": "registry:npm/lodash#4.0.0+20160416211519",
+    "moment": "registry:npm/moment#2.10.5+20160211003958",
+    "mongodb": "registry:npm/mongodb#2.1.0+20160422172506",
+    "request": "registry:npm/request#2.69.0+20160428223725",
+    "twit": "registry:npm/twit#2.0.0+20160422171648"
   },
   "ambientDependencies": {
-    "node": "registry:dt/node#4.0.0+20160423143914"
+    "ioredis": "registry:dt/ioredis#0.0.0+20160412133314",
+    "node": "registry:dt/node#4.0.0+20160423143914",
+    "turf": "registry:dt/turf#2.0.0+20160423062430"
   }
 }

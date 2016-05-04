@@ -3,7 +3,7 @@
 const stream = require( 'stream' );
 
 // Load modules
-const debug = require( 'debug' )( 'UrbanScope:utils:stream saver' );
+const debug = require( 'debug' )( 'UrbanScope:utils:stream-saver' );
 
 // Load my modules
 const db = require( 'db-utils' );

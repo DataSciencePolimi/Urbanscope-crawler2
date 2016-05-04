@@ -76,6 +76,8 @@ class TwitterAccount extends Account {
 
       return this.get( query );
     }
+
+    return null;
   }
   get( query ) {
     query = _.assign( {}, DEFAULT_PARAMS, query );
@@ -107,6 +109,7 @@ class TwitterAccount extends Account {
 
       debug( '%s error', this, err, err.stack );
       // On error do not repeat the request
+      return null;
     } )
 
   }

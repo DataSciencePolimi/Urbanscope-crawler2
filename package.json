@@ -4,6 +4,7 @@
   "private": true,
   "description": "UrbanScope crawler",
   "scripts": {
+    "postinstall": "typings i",
     "start": "npm run crawler",
     "crawler": "node crawler"
   },
@@ -33,6 +34,7 @@
     "gulp-json-editor": "*",
     "gulp-rename": "*",
     "gulp-run": "*",
-    "run-sequence": "*"
+    "run-sequence": "*",
+    "typings": "^0.8.1"
   }
 }

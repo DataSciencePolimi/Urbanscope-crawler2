@@ -25,8 +25,6 @@ class MunicipalityIdentifier extends stream.Transform {
 
   _transform( post, enc, cb ) {
     const placeName = _.get( post, 'raw.place.name' );
-    debug( 'For place: %s', placeName );
-    debug( 'Location: ', post.location );
 
     // Check for precise location
     if( post.location ) {
@@ -57,7 +55,6 @@ class MunicipalityIdentifier extends stream.Transform {
       if( foundPlace ) {
         const municipalityId = _.get( foundPlace, 'properties.PRO_COM' );
         debug( 'Found municipality with name: %d', municipalityId );
-        debug( 'Found Place', foundPlace );
 
         post.municipality = municipalityId;
       }

@@ -34,6 +34,7 @@ const PLACE_ID = CONFIG.place;
 const RADIUS = CONFIG.radius;
 
 // Module variables declaration
+const redis = new Redis( REDIS_CONFIG );
 
 // Module functions declaration
 function* getGridPoints( radius ) {
@@ -55,14 +56,14 @@ function* getGridPoints( radius ) {
   debug( 'Generated %d points', points.length );
   return points;
 }
-function* removeStatus( redis ) {
-  yield redis.del( 'Twitter' );
-  yield redis.del( 'Instagram' );
+function* removeStatus( redisInstance ) {
+  yield redisInstance.del( 'Twitter' );
+  yield redisInstance.del( 'Instagram' );
 }
-function* resetStatus( redis, points ) {
-  yield redis.hdel( 'Twitter', 'lastId' );
-  yield redis.hdel( 'Instagram', 'maxTimestamp' );
-  yield redis.hset( 'Instagram', 'lastLength', points );
+function* resetStatus( redisInstance, points ) {
+  yield redisInstance.hdel( 'Twitter', 'lastId' );
+  yield redisInstance.hdel( 'Instagram', 'maxTimestamp' );
+  yield redisInstance.hset( 'Instagram', 'lastLength', points );
 
 }
 // Module class declaration
@@ -85,7 +86,6 @@ co( function* () {
 
   debug( 'Crawling on %d grid points', gridPoints.length );
 
-  let redis = new Redis( REDIS_CONFIG );
   yield removeStatus( redis );
 
 
@@ -153,10 +153,7 @@ co( function* () {
     yield Promise.delay( 5000 );
   }
 } )
-.catch( function( err ) {
-  debug( 'FUUUUU', err, err.stack );
-} )
-.then( db.close )
-;
+.catch( err => debug( 'FUUUUU', err, err.stack ) )
+.then( () => Promise.all( db.close(), redis.close() ) )
 
 //  50 6F 77 65 72 65 64  62 79  56 6F 6C 6F 78
