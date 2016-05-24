@@ -16,17 +16,16 @@ const db = require( 'db-utils' );
 
 // Module class declaration
 class Saver extends stream.Writable {
-  constructor( name, collectionName ) {
+  constructor( collectionName ) {
     super( { objectMode: true } );
 
-    this.name = name;
     this.collection = db.get( collectionName );
     debug( 'Created saver %s on: %s', this, collectionName );
   }
 
   // Overrides
   toString() {
-    return this.name;
+    return 'Saver';
   }
 
   _write( data, enc, cb ) {

@@ -2,6 +2,7 @@
 // Load system modules
 
 // Load modules
+const Funnel = require( 'stream-funnel' );
 
 // Load my modules
 const NilIdentifier = require( './utils/stream-identify-nil.js' );
@@ -14,14 +15,41 @@ const IncrAnomalyCount = require( './utils/stream-incr-anomaly-redis.js' );
 // Module variables declaration
 
 // Module functions declaration
-function pipeline( postStream, redis ) {
+function joinSources( sources ) {
+  const funnel = new Funnel( { objectMode: true } );
+  funnel.addSources( sources );
+  return funnel;
+}
+function pipeline( redis /*, ...sources */ ) {
+  const sources = [].slice.call( arguments, 1 );
+  const dataStream = joinSources( sources );
+
   const nilIdentifier = new NilIdentifier();
   const municipalityIdentifier = new MunicipalityIdentifier();
   const incrMonthCount = new IncrMonthCount( redis );
   const incrNilAnomalyCount = new IncrAnomalyCount( 'nil', redis );
   const incrMunicipalityAnomalyCount = new IncrAnomalyCount( 'municipality', redis );
 
-  return postStream
+
+  /* HIGH LEVEL PIPELINE SCHEMA
+  SOURCE_1 ->(+)
+              |
+  SOURCE_2 ->(+)
+              | -> DATA_STREAM
+  SOURCE_3 ->(+)
+              |
+  SOURCE_N ->(+)
+  */
+
+  /* HIGH LEVEL PIPELINE SCHEMA
+  DATA_STREAM ->
+  -> IDENTIFY MUNICIPALITY -> IDENTIFY NIL ->
+  -> MONTH COUNT ->
+  -> ANOMALY NIL -> ANOMALY MUNICIPALITY -> ...
+  */
+
+
+  return dataStream
   // Add municipality to the post
   .pipe( municipalityIdentifier )
   // Add NIL to the post

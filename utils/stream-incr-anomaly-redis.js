@@ -1,9 +1,9 @@
 'use strict';
 // Load system modules
-let stream = require( 'stream' );
+const stream = require( 'stream' );
 
 // Load modules
-let _ = require( 'lodash' );
+const _ = require( 'lodash' );
 // let debug = require( 'debug' )( 'UrbanScope:utils:stream increment anomaly count' );
 
 // Load my modules
@@ -25,24 +25,24 @@ class IncrAnomalyCount extends stream.Transform {
   }
 
   getKey( post ) {
-    let id = post[ this.type ];
-    let date = post.date;
-    let year = date.getUTCFullYear();
-    let trimester = Math.floor( date.getUTCMonth()/3 );
+    const id = post[ this.type ];
+    const date = post.date;
+    const year = date.getUTCFullYear();
+    const trimester = Math.floor( date.getUTCMonth()/3 );
 
     return `anomaly-${year}-${trimester}-${this.type}-${id}`;
   }
 
 
   _transform( post, enc, cb ) {
-    let isTwitter = post.source==='twitter';
-    let lang = post.lang;
-    let featureId = post[ this.type ]; // Feature ID
+    const isTwitter = post.source==='twitter';
+    const lang = post.lang;
+    const featureId = post[ this.type ]; // Feature ID
 
 
     // Should have feature id and valid language to proceed
     if( isTwitter && featureId && lang && lang!=='und' ) {
-      let key = this.getKey( post );
+      const key = this.getKey( post );
 
       return this.redis
       .hincrby( key, lang, 1 )

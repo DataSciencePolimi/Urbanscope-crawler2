@@ -19,19 +19,14 @@ const WRAP_OPTS = {
 
 // Module class declaration
 class Saver extends stream.Transform {
-  constructor( name, provider ) {
+  constructor( provider ) {
     super( { objectMode: true } );
 
-    this.name = name;
-    this.provider = provider;
+    this.provider = provider.toLowerCase();
     debug( 'Created wrapper for %s', provider );
   }
 
   // Overrides
-  toString() {
-    return this.name;
-  }
-
   _transform( data, enc, cb ) {
     debug( '%s wrapping', this, data.id );
 

@@ -1,16 +1,18 @@
 'use strict';
 // Load system modules
-let stream = require( 'stream' );
+const stream = require( 'stream' );
 
 // Load modules
-let _ = require( 'lodash' );
-let Funnel = require( 'stream-funnel' );
-let debug = require( 'debug' )( 'UrbanScope:providers:Base' );
-let Redis = require( 'ioredis' );
+const _ = require( 'lodash' );
+const Promise = require( 'bluebird' );
+const Funnel = require( 'stream-funnel' );
+const debug = require( 'debug' )( 'UrbanScope:providers:Base' );
 
 // Load my modules
+const Wrapper = require( '../utils/stream-wrapper' );
 
 // Constant declaration
+const DONE_DELAY = 1000*60*1; // 1 min
 
 // Module variables declaration
 
@@ -18,27 +20,30 @@ let Redis = require( 'ioredis' );
 
 // Module class declaration
 class Provider extends stream.PassThrough {
-  constructor( name, keys, redis ) {
+  constructor( keys, options ) {
     super( { objectMode: true } );
 
+    options = options || {};
     keys = keys || [];
     if( !Array.isArray( keys ) ) {
       keys = [ keys ];
     }
 
-    if( !redis ) {
-      redis = new Redis();
-    }
-    this.redis = redis;
+    // Properties
+    this.doneDelay = options.doneDelay || DONE_DELAY;
+    this.name = options.name;
+    this.redis = options.redis;
 
-    this.name = name;
-    this.accounts = _.map( keys, this.createAccount, this );
-    this.wrapper = this.createWrapper();
+    this.accounts = _.map( keys, k => this.createAccount( k ) );
     debug( 'Created provider %s with %d accounts', this, this.accounts.length );
 
-    for( let account of this.accounts ) {
+    for( const account of this.accounts ) {
       account.on( 'status', status => this._updateStatus( status ) );
     }
+
+    // Connect wrapper
+    this.wrapper = new Wrapper( this.name );
+    this.wrapper.pipe( this );
   }
 
   // Overrides
@@ -48,30 +53,40 @@ class Provider extends stream.PassThrough {
 
   // Abstract
   createAccount() { throw new Error( 'Must implement createAccount()' ); }
-  createWrapper() { throw new Error( 'Must implement createWrapper()' ); }
 
   // Methods
   _updateStatus( status ) {
-    this.redis.hmset( this.name, status );
+    this.redis.hmset( this, status );
   }
   _wrapCall( method ) {
-    let funnel = new Funnel( `${method} data` );
+    const funnel = new Funnel( { objectMode: true } );
 
     // Prepare all accounts
-    for( let account of this.accounts ) {
-      funnel.add( account );
-    }
+    funnel.addSources( this.accounts );
 
     // Gather all data and send them as myself :)
     funnel
-    .pipe( this.wrapper )
-    .pipe( this );
+    .pipe( this.wrapper, { end: false } ); // Do not send the end event
+
+    // Onche the funnel ends, unplug the wrapper
+    funnel.on( 'end', () => {
+      funnel.unpipe( this.wrapper );
+    } );
 
     // Start all accounts
-    let args = Array.prototype.slice.call( arguments, 1 );
-    for( let account of this.accounts ) {
-      account[ method ].apply( account, args ); // Call function on account
+    const args = [].slice.call( arguments, 1 );
+    const promises = [];
+    for( const account of this.accounts ) {
+      const promise = account[ method ].apply( account, args ); // Call function on account
+      promises.push( promise );
     }
+    return Promise.all( promises )
+    .then( () => {
+      // unplug all the accounts from the funnel
+      for( const account of this.accounts ) {
+        funnel.sourceFinished( account );
+      }
+    } )
   }
   geo( points, status ) {
     if( !Array.isArray( points ) ) {
@@ -89,12 +104,12 @@ class Provider extends stream.PassThrough {
     // Use only the pionts needed (also create a shallow copy)
     points = points.slice( currentIndex );
 
-    this._wrapCall( 'geo', points, status.lastId );
+    return this._wrapCall( 'geo', points, status.lastId );
   }
   place( placeId, status ) {
     debug( '%s: performing place requests of %s', this, placeId );
 
-    this._wrapCall( 'place', placeId, status.lastId );
+    return this._wrapCall( 'place', placeId, status.lastId );
   }
 
   // Entry point
@@ -102,15 +117,22 @@ class Provider extends stream.PassThrough {
     other = other || {};
     action = ( action || '' ).toLowerCase();
 
-    debug( 'Starting action: %s', action );
+    debug( '%s: starting action: %s', this, action );
 
+    let promise = Promise.resolve();
     if( action==='geo' ) {
-      this.geo( data, other );
+      promise = this.geo( data, other );
     } else if( action==='place' ) {
-      this.place( data, other );
+      promise = this.place( data, other );
     } else {
-      throw new Error( `Action "${action}" not supported` );
+      promise = Promise.reject( new Error( `Action "${action}" not supported` ) );
     }
+
+    promise
+    .tap( () => debug( '%s: finished', this ) )
+    .delay( this.doneDelay ) // Wait
+    .then( () => this.start( action, data, other ) ) // REDO
+    .catch( err => debug( '%s: error', this, err.stack ) );
   }
 }
 

@@ -2,6 +2,7 @@
   "url": "mongodb://localhost:27017",
   "name": "UrbanScope2",
   "collections": {
-    "posts": "posts"
+    "posts": "posts",
+    "calls": "telecom"
   }
 }

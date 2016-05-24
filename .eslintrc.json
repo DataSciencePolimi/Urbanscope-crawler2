@@ -1,5 +1,6 @@
 {
   "extends": "volox",
-  "no-var": true,
-  "prefer-spread": true
+  "env": {
+    "node": true
+  }
 }

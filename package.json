@@ -4,9 +4,10 @@
   "private": true,
   "description": "UrbanScope crawler",
   "scripts": {
-    "postinstall": "typings i",
-    "start": "npm run crawler",
-    "crawler": "node crawler"
+    "deps": "typings i",
+    "fix": "node hardUpdate",
+    "crawler": "node crawler",
+    "start": "npm run crawler"
   },
   "author": "Volox",
   "license": "MIT",
@@ -23,7 +24,7 @@
     "moment": "2.x",
     "mongodb": "2.x",
     "request": "2.x",
-    "stream-funnel": "1.x",
+    "stream-funnel": "2.x",
     "turf": "2.x",
     "twit": "2.x"
   },

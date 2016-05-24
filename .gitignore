@@ -34,6 +34,10 @@ typings
 deploy
 
 # Do not sync config files
+config/mongo.json
+config/redis.json
+config/keys-instagram.json
+config/keys-twitter.json
 
 ### SublimeText project files
 *.sublime-workspace

@@ -24,8 +24,6 @@ const SOURCE = [
   '!test/',
   '!deploy/**',
   '!deploy/',
-  '!initDB.js',
-  '!updateDB.js',
   '!gulpfile.js',
   '!todo.md',
 ];

@@ -6,25 +6,23 @@ const _ = require( 'lodash' );
 const co = require( 'co' );
 const Promise = require( 'bluebird' );
 const debug = require( 'debug' )( 'UrbanScope:crawler' );
-const Funnel = require( 'stream-funnel' );
 const Redis = require( 'ioredis' );
 
 // Load my modules
 const db = require( 'db-utils' );
-const grid = require( './grid/' );
 const Twitter = require( './providers/twitter' );
 const Instagram = require( './providers/instagram' );
-const streamToPromise = require( './utils/stream-to-promise.js' );
 const Saver = require( './utils/stream-saver.js' );
 const pipeline = require( './pipeline' );
 
 // Constant declaration
 const CONFIG = require( './config/' );
 const REDIS_CONFIG = require( './config/redis.json' );
-const MONGO = require( './config/mongo.json' );
-const COLLECTIONS = MONGO.collections;
-const DB_URL = MONGO.url;
-const DB_NAME = MONGO.name;
+const MONGO_CONFIG = require( './config/mongo.json' );
+const GRID_POINTS = require( './config/grid.json' );
+const COLLECTIONS = MONGO_CONFIG.collections;
+const DB_URL = MONGO_CONFIG.url;
+const DB_NAME = MONGO_CONFIG.name;
 const COLLECTION = 'posts';
 
 const TW_KEYS = require( './config/keys-twitter.json' );
@@ -41,10 +39,10 @@ function* getGridPoints( radius ) {
   debug( 'Get grid with %d meters radius', radius );
 
   // Get grid points as FeatureCollection list of Points
-  let fc = yield grid.get( radius );
+  const fc = GRID_POINTS;
 
   // Convert to plain array of usable points
-  let points = _( fc.features )
+  const points = _( fc.features )
   .map( 'geometry.coordinates' )
   .map( coords => ( {
     longitude: coords[ 0 ],
@@ -66,6 +64,18 @@ function* resetStatus( redisInstance, points ) {
   yield redisInstance.hset( 'Instagram', 'lastLength', points );
 
 }
+function startTwitter( redis, keys, placeId ) {
+  const dataStream = new Twitter( redis, TW_KEYS );
+
+  dataStream.start( 'place', placeId );
+  return dataStream;
+}
+function startInstagram( redis, keys, points ) {
+  const dataStream = new Instagram( redis, IG_KEYS );
+
+  dataStream.start( 'geo', points );
+  return dataStream;
+}
 // Module class declaration
 
 // Module initialization (at first load)
@@ -82,78 +92,45 @@ co( function* () {
   debug( 'Ready' );
 
   let gridPoints = yield getGridPoints( RADIUS );
-  // gridPoints = _.sample( gridPoints, 6000 );
+  gridPoints = _.sampleSize( gridPoints, 600 );
 
   debug( 'Crawling on %d grid points', gridPoints.length );
 
+
+  // Reset current status
   yield removeStatus( redis );
 
 
-  let loopNum = 0;
 
-  // Start endless loop
-  for(;;) {
-    loopNum += 1;
-    let points = gridPoints.slice();
+  /* HIGH LEVEL PIPELINE SCHEMA
+  TW -> +
+        |
+       (+) -> PIPELINE -> DB
+        |
+  IG -> +
+  */
 
-    // Retrieve the previous state
-    let lastTwId = yield redis.hget( 'Twitter', 'lastId' );
-    let lastIgId = yield redis.hget( 'Instagram', 'lastId' );
-    let lastIgLength = yield redis.hget( 'Instagram', 'lastLength' );
-    lastIgLength = lastIgLength || gridPoints.length;
-    debug( 'Last twitter id: %s', lastTwId );
-    debug( 'Last Instagram id: %s', lastIgId );
-    debug( 'Last Instagram length: %s', lastIgLength );
+  // Create write stram
+  const saveToDb = new Saver( COLLECTION );
 
+  // Create the data streams
+  const twitterDataStream = startTwitter( redis, TW_KEYS, PLACE_ID );
+  // Start instagram, provide a shallow copy of the data array
+  const instagramDataStream = startInstagram( redis, IG_KEYS, gridPoints.slice() );
 
-    debug( '________--------##### STARTING LOOP #####--------________' );
-    debug( 'Loop %d started', loopNum );
+  // Push the data recieved in the saver stream
+  pipeline( redis,
+    twitterDataStream,
+    instagramDataStream
+  )
+  .pipe( saveToDb );
 
-    debug( 'Creating providers' );
-    let twStream = new Twitter( TW_KEYS, redis );
-    let igStream = new Instagram( IG_KEYS, redis );
-
-    // Create stream saver
-    let saveToDb = new Saver( `${COLLECTION} saver`, COLLECTION );
-
-    // Create funnel to collect all data
-    let funnel = new Funnel( `Funnel loop ${loopNum}` );
-
-    // push the data recieved in the saver stream
-    let waitStream = pipeline( funnel, redis )
-    .pipe( saveToDb );
-
-    // Collect data from all the providers
-    funnel.add( twStream );
-    funnel.add( igStream );
-
-    debug( 'Starting providers' );
-    twStream.start( 'place', PLACE_ID, {
-      lastId: lastTwId,
-    } );
-    igStream.start( 'geo', points, {
-      lastId: lastIgId,
-      startPoint: points.length - Number(lastIgLength),
-    } );
-
-
-    // Wait for all the providers to finish, we simply wait for the collector/funnel
-    let waitPromise = streamToPromise( waitStream );
-    debug( 'Waiting the stream to end' );
-    yield waitPromise;
-
-    debug( 'Loop %d done', loopNum );
-    debug( '________--------##### END LOOP #####--------________' );
-
-
-    // Clean redis status
-    yield resetStatus( redis, gridPoints.length );
-
-    // Wait 5 seconds, just in case
-    yield Promise.delay( 5000 );
-  }
 } )
-.catch( err => debug( 'FUUUUU', err, err.stack ) )
-.then( () => Promise.all( db.close(), redis.close() ) )
+.catch( err => {
+  debug( 'FUUUUU', err, err.stack );
+
+  return Promise.all( db.close(), redis.quit() )
+  .then( () => process.exit(1) ) // O_O
+} );
 
 //  50 6F 77 65 72 65 64  62 79  56 6F 6C 6F 78

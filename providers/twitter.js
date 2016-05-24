@@ -2,14 +2,13 @@
 // Load system modules
 
 // Load modules
-let debug = require( 'debug' )( 'UrbanScope:providers:Twitter' );
+const debug = require( 'debug' )( 'UrbanScope:providers:Twitter' );
 
 // Load my modules
-let Account = require( '../accounts/twitter' );
-let Wrapper = require( '../utils/stream-wrapper' );
+const Account = require( './accounts/twitter' );
+const Provider = require( './base' );
 
 // Constant declaration
-let Provider = require( './base' );
 
 // Module variables declaration
 
@@ -17,23 +16,17 @@ let Provider = require( './base' );
 
 // Module class declaration
 class Twitter extends Provider {
-  constructor( keys, redis ) {
-    super( 'Twitter', keys, redis );
-
-    debug( 'Done' );
+  constructor( redis, keys ) {
+    super( keys, {
+      redis: redis,
+      name: 'Twitter',
+    } );
   }
 
   // Overrides
   createAccount( key ) {
-    debug( 'Creating account for', key );
-
-    let account = new Account( key );
-    return account;
-  }
-
-  createWrapper() {
-    let wrapper = new Wrapper( `${this.name} wrapper`, 'twitter' );
-    return wrapper;
+    debug( '%s: creating account with', this, key );
+    return new Account( key );
   }
 }
 

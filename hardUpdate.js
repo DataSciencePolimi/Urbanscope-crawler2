@@ -1,5 +1,8 @@
 'use strict';
 // Load system modules
+const PassThrough = require( 'stream' ).PassThrough;
+const Transform = require( 'stream' ).Transform;
+
 
 // Load modules
 const co = require( 'co' );
@@ -25,8 +28,39 @@ const COLLECTION = 'posts';
 const redis = new Redis( REDIS_CONFIG );
 
 // Module functions declaration
+function close() {
+  const quitRedis = Promise.promisify( redis.quit, {
+    context: redis,
+  } )
 
+  return Promise.all( [
+    db.close(),
+    quitRedis(),
+  ] );
+}
 // Module class declaration
+class FixSource extends Transform {
+  constructor() {
+    super( { objectMode: true } )
+    this.total = 0;
+  }
+  _transform( data, enc, cb ) {
+    data.source = data.source || data.provider;
+    return cb( null, data );
+  }
+}
+class Log extends PassThrough {
+  constructor() {
+    super( { objectMode: true } )
+    this.total = 0;
+  }
+
+  _transform( data, enc, cb ) {
+    this.total += 1;
+    debug( 'Parsed %d posts', this.total );
+    return cb( null, data );
+  }
+}
 
 // Module initialization (at first load)
 // Promise.longStackTraces();
@@ -37,18 +71,31 @@ co( function* () {
   db.mapping = COLLECTIONS;
 
   // Open the DB connection
-  yield db.open( DB_URL, 'Test' );
+  yield db.open( DB_URL, DB_NAME );
+
+  // Clear all redis
+  yield redis.flushall();
+
 
   debug( 'Ready' );
   const updatePost = new Updater( `${COLLECTION} updater`, COLLECTION );
-  yield redis.flushall();
+
 
   const collection = db.get( COLLECTION );
+  const dataStream = collection.find( {
+    /*
+    date: {
+      $gte: moment( { y: 2016, month: 2 } ).startOf( 'month' ).toDate(),
+      $lte: moment( { y: 2016, month: 4 } ).endOf( 'month' ).toDate(),
+    }
+    */
+  } )
+  .stream()
+  .pipe( new FixSource() );
 
-  const dataStream = collection.find().stream();
-
-  // push the data recieved in the saver stream
-  const waitStream = pipeline( dataStream, redis )
+  // push the data recieved in the update stream
+  const waitStream = pipeline( redis, dataStream )
+  .pipe( new Log() )
   .pipe( updatePost );
 
 
@@ -59,6 +106,6 @@ co( function* () {
   debug( 'All done, bye' );
 } )
 .catch( err => debug( 'FUUUUU', err, err.stack ) )
-.then( () => Promise.all( db.close(), redis.quit() ) )
+.then( close )
 
 //  50 6F 77 65 72 65 64  62 79  56 6F 6C 6F 78
