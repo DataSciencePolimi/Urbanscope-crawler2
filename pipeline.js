@@ -8,9 +8,9 @@ const Funnel = require( 'stream-funnel' );
 const NilIdentifier = require( './utils/stream-identify-nil.js' );
 const MunicipalityIdentifier = require( './utils/stream-identify-municipality.js' );
 const IncrMonthCount = require( './utils/stream-incr-month-redis.js' );
-const IncrAnomalyCount = require( './utils/stream-incr-anomaly-redis.js' );
 
 // Constant declaration
+const TIMELINE = 'timeline';
 
 // Module variables declaration
 
@@ -20,15 +20,15 @@ function joinSources( sources ) {
   funnel.addSources( sources );
   return funnel;
 }
-function pipeline( redis /*, ...sources */ ) {
-  const sources = [].slice.call( arguments, 1 );
+function pipeline( sources ) {
   const dataStream = joinSources( sources );
 
   const nilIdentifier = new NilIdentifier();
   const municipalityIdentifier = new MunicipalityIdentifier();
-  const incrMonthCount = new IncrMonthCount( redis );
-  const incrNilAnomalyCount = new IncrAnomalyCount( 'nil', redis );
-  const incrMunicipalityAnomalyCount = new IncrAnomalyCount( 'municipality', redis );
+  const incrNilMonthCount = new IncrMonthCount( 'nil', TIMELINE );
+  const incrMunicipalityMonthCount = new IncrMonthCount( 'municipality', TIMELINE );
+  // const incrNilAnomalyCount = new IncrAnomalyCount( 'nil', ANOMALIES );
+  // const incrMunicipalityAnomalyCount = new IncrAnomalyCount( 'municipality', ANOMALIES );
 
 
   /* HIGH LEVEL PIPELINE SCHEMA
@@ -45,7 +45,6 @@ function pipeline( redis /*, ...sources */ ) {
   DATA_STREAM ->
   -> IDENTIFY MUNICIPALITY -> IDENTIFY NIL ->
   -> MONTH COUNT ->
-  -> ANOMALY NIL -> ANOMALY MUNICIPALITY -> ...
   */
 
 
@@ -54,12 +53,17 @@ function pipeline( redis /*, ...sources */ ) {
   .pipe( municipalityIdentifier )
   // Add NIL to the post
   .pipe( nilIdentifier )
-  // Increment the monthly count in Redis
-  .pipe( incrMonthCount )
+  // Increment the NIL monthly count
+  .pipe( incrNilMonthCount )
+  // Increment the Municipality monthly count
+  .pipe( incrMunicipalityMonthCount )
+
+  /*
   // Increment the NIL anomaly count in Redis
-  .pipe( incrNilAnomalyCount )
+  // .pipe( incrNilAnomalyCount )
   // Increment the Municipality anomaly count in Redis
-  .pipe( incrMunicipalityAnomalyCount );
+  // .pipe( incrMunicipalityAnomalyCount );
+  */
 }
 // Module class declaration
 

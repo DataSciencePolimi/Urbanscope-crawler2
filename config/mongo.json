@@ -1,8 +1,1 @@
-{
-  "url": "mongodb://localhost:27017",
-  "name": "UrbanScope2",
-  "collections": {
-    "posts": "posts",
-    "calls": "telecom"
-  }
-}
+/Users/volox/poli/UrbanScope/Code/mongo-shared.json

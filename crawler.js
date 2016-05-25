@@ -58,20 +58,21 @@ function* removeStatus( redisInstance ) {
   yield redisInstance.del( 'Twitter' );
   yield redisInstance.del( 'Instagram' );
 }
+/*
 function* resetStatus( redisInstance, points ) {
   yield redisInstance.hdel( 'Twitter', 'lastId' );
   yield redisInstance.hdel( 'Instagram', 'maxTimestamp' );
   yield redisInstance.hset( 'Instagram', 'lastLength', points );
-
 }
-function startTwitter( redis, keys, placeId ) {
-  const dataStream = new Twitter( redis, TW_KEYS );
+*/
+function startTwitter( redisInstance, keys, placeId ) {
+  const dataStream = new Twitter( redisInstance, TW_KEYS );
 
   dataStream.start( 'place', placeId );
   return dataStream;
 }
-function startInstagram( redis, keys, points ) {
-  const dataStream = new Instagram( redis, IG_KEYS );
+function startInstagram( redisInstance, keys, points ) {
+  const dataStream = new Instagram( redisInstance, IG_KEYS );
 
   dataStream.start( 'geo', points );
   return dataStream;
@@ -119,10 +120,10 @@ co( function* () {
   const instagramDataStream = startInstagram( redis, IG_KEYS, gridPoints.slice() );
 
   // Push the data recieved in the saver stream
-  pipeline( redis,
+  pipeline( [
     twitterDataStream,
-    instagramDataStream
-  )
+    instagramDataStream,
+  ] )
   .pipe( saveToDb );
 
 } )
