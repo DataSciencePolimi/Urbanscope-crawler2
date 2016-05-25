@@ -7,7 +7,7 @@ const Funnel = require( 'stream-funnel' );
 // Load my modules
 const NilIdentifier = require( './utils/stream-identify-nil.js' );
 const MunicipalityIdentifier = require( './utils/stream-identify-municipality.js' );
-const IncrMonthCount = require( './utils/stream-incr-month-redis.js' );
+const IncrMonthCount = require( './utils/stream-incr-month.js' );
 
 // Constant declaration
 const TIMELINE = 'timeline';
