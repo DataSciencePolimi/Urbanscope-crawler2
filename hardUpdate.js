@@ -72,12 +72,12 @@ co( function* () {
 
   const collection = db.get( COLLECTION );
   const dataStream = collection
-  .find()
+  .find( {} )
   .stream()
   .pipe( new FixSource() );
 
   // push the data recieved in the update stream
-  const waitStream = pipeline( dataStream )
+  const waitStream = pipeline( [ dataStream ] )
   .pipe( new Log() )
   .pipe( updatePost );
 
