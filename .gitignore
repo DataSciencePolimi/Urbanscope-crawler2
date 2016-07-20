@@ -37,8 +37,8 @@ deploy
 .vscode
 config/mongo.json
 config/redis.json
-config/keys-instagram.json
-config/keys-twitter.json
+config/keys-instagram*.json
+config/keys-twitter*.json
 
 ### SublimeText project files
 *.sublime-workspace
