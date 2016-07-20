@@ -72,9 +72,12 @@ class TwitterAccount extends Account {
     const metadata = data.search_metadata;
     debug( '%s: got meta', this, metadata );
 
-    if( metadata.next_results ) {
-      const params = metadata.next_results.slice( 1 );
+    if( metadata && metadata.max_id_str ) {
+      const maxId = metadata.max_id_str;
+      const params = metadata.refresh_url.slice( 1 );
       const query = querystring.parse( params );
+      delete query.since_id;
+      query[ 'max_id' ] = maxId;
       debug( '%s: next: ', this, query );
 
       return this.get( query );
