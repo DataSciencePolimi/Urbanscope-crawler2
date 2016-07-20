@@ -65,10 +65,16 @@ function* resetStatus( redisInstance, points ) {
   yield redisInstance.hset( 'Instagram', 'lastLength', points );
 }
 */
-function startTwitter( redisInstance, keys, placeId ) {
+function startTwitterPlace( redisInstance, keys, placeId ) {
   const dataStream = new Twitter( redisInstance, TW_KEYS );
 
   dataStream.start( 'place', placeId );
+  return dataStream;
+}
+function startTwitterPoints( redisInstance, keys, points ) {
+  const dataStream = new Twitter( redisInstance, TW_KEYS );
+
+  dataStream.start( 'geo', points );
   return dataStream;
 }
 function startInstagram( redisInstance, keys, points ) {
@@ -77,6 +83,7 @@ function startInstagram( redisInstance, keys, points ) {
   dataStream.start( 'geo', points );
   return dataStream;
 }
+
 // Module class declaration
 
 // Module initialization (at first load)
@@ -115,14 +122,15 @@ co( function* () {
   const saveToDb = new Saver( COLLECTION );
 
   // Create the data streams
-  const twitterDataStream = startTwitter( redis, TW_KEYS, PLACE_ID );
+  const twitterDataStream = startTwitterPlace( redis, TW_KEYS, PLACE_ID );
+  // const twitterDataStream = startTwitterPoints( redis, TW_KEYS, gridPoints.slice() );
   // Start instagram, provide a shallow copy of the data array
-  const instagramDataStream = startInstagram( redis, IG_KEYS, gridPoints.slice() );
+  // const instagramDataStream = startInstagram( redis, IG_KEYS, gridPoints.slice() );
 
   // Push the data recieved in the saver stream
   pipeline( [
     twitterDataStream,
-    instagramDataStream,
+    // instagramDataStream,
   ] )
   .pipe( saveToDb );
 

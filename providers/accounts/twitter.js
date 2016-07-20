@@ -48,6 +48,12 @@ class TwitterAccount extends Account {
   // Methods
   loop( data ) {
     const tweets = data.statuses;
+    if( !tweets ) {
+      const twError = data.errors[ 0 ];
+      const error = new Error( twError.message );
+      error.code = twError.code;
+      throw error;
+    }
     debug( '%s: got %d tweets', this, tweets.length );
 
 
@@ -112,8 +118,7 @@ class TwitterAccount extends Account {
         lastLength: length,
       } );
       return this.geo( points );
-    } )
-    // .then( () => this.end() );
+    } );
   }
 
   place( placeId, lastId ) {

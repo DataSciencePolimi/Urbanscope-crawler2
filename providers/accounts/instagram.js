@@ -70,6 +70,7 @@ class InstagramAccount extends Account {
     }
 
     // Loop not available for location
+    return null;
   }
   get( lat, long, radius ) {
     const opts = _.assign( {}, DEFAULT_PARAMS, {
@@ -91,12 +92,9 @@ class InstagramAccount extends Account {
     // No more points, stream finished
     if( !point ) {
       debug( '%s: no more valid points, end', this );
-      // this.end();
-      // this.emit( 'status', { lastLength: null } );
       return Promise.resolve( null );
     }
     const length = points.length;
-
     debug( '%s: query for point(%d): ', this, length, point );
 
     return this.get( point.latitude, point.longitude, point.radius, maxTimestamp )
@@ -105,8 +103,7 @@ class InstagramAccount extends Account {
         lastLength: length,
       } );
       return this.geo( points, maxTimestamp );
-    } )
-    // .then( () => this.end() );
+    } );
   }
 }
 
