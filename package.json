@@ -5,9 +5,9 @@
   "description": "UrbanScope crawler",
   "scripts": {
     "deps": "typings i",
-    "fix": "node hardUpdate",
+    "fix": "DEBUG=UrbanScope:hard-update node hardUpdate",
     "crawler": "node crawler",
-    "start": "npm run crawler"
+    "start": "DEBUG=UrbanScope:* npm run crawler"
   },
   "author": "Volox",
   "license": "MIT",
