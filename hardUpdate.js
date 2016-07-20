@@ -6,7 +6,7 @@ const Transform = require( 'stream' ).Transform;
 
 // Load modules
 const co = require( 'co' );
-const debug = require( 'debug' )( 'UrbanScope:hard-udate' );
+const debug = require( 'debug' )( 'UrbanScope:hard-update' );
 
 // Load my modules
 const db = require( 'db-utils' );
