@@ -60,24 +60,22 @@ class TwitterAccount extends Account {
     if( tweets.length===0 ) {
       debug( '%s: no more tweets', this );
       return null;
-    } else {
-      this.send( tweets );
-
-      const lastId = tweets[ tweets.length-1 ].id_str;
-      this.emit( 'status', {
-        lastId: lastId,
-      } );
     }
+    this.send( tweets );
+
+    const lastId = tweets[ tweets.length-1 ].id_str;
+    this.emit( 'status', {
+      lastId: lastId,
+    } );
 
     const metadata = data.search_metadata;
     debug( '%s: got meta', this, metadata );
 
-    if( metadata && metadata.max_id_str ) {
-      const maxId = metadata.max_id_str;
+    if( metadata && metadata.refresh_url ) {
       const params = metadata.refresh_url.slice( 1 );
       const query = querystring.parse( params );
       delete query.since_id;
-      query[ 'max_id' ] = maxId;
+      query[ 'max_id' ] = lastId;
       debug( '%s: next: ', this, query );
 
       return this.get( query );
