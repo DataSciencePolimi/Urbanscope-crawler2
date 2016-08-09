@@ -34,7 +34,7 @@ class Saver extends stream.Writable {
     this.collection
     .insertOne( data )
     .catch( err => {
-      if( err.code===11000 ) {
+      if( err.code === 11000 ) {
         debug( 'Duplicate entry' );
         return;
       }

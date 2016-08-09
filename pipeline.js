@@ -3,14 +3,17 @@
 
 // Load modules
 const Funnel = require( 'stream-funnel' );
+const debug = require( 'debug' )( 'UrbanScope:pipeline' );
 
 // Load my modules
+const FilterKnownPosts = require( './utils/stream-filter.js' );
 const NilIdentifier = require( './utils/stream-identify-nil.js' );
 const MunicipalityIdentifier = require( './utils/stream-identify-municipality.js' );
 const IncrMonthCount = require( './utils/stream-incr-month.js' );
 
 // Constant declaration
 const TIMELINE = 'timeline';
+const POSTS = 'posts';
 
 // Module variables declaration
 
@@ -20,8 +23,11 @@ function joinSources( sources ) {
   funnel.addSources( sources );
   return funnel;
 }
-function pipeline( sources ) {
-  const dataStream = joinSources( sources );
+function pipeline( sources, force ) {
+  force = force == true || false;
+  debug( 'Force: ', force );
+
+  let dataStream = joinSources( sources );
 
   const nilIdentifier = new NilIdentifier();
   const municipalityIdentifier = new MunicipalityIdentifier();
@@ -47,6 +53,12 @@ function pipeline( sources ) {
   -> MONTH COUNT ->
   */
 
+  // Add checking for already parsed posts
+  if( !force ) {
+    dataStream = dataStream
+    .pipe( new FilterKnownPosts( POSTS ) );
+  }
+
 
   return dataStream
   // Add municipality to the post
@@ -56,7 +68,7 @@ function pipeline( sources ) {
   // Increment the NIL monthly count
   .pipe( incrNilMonthCount )
   // Increment the Municipality monthly count
-  .pipe( incrMunicipalityMonthCount )
+  .pipe( incrMunicipalityMonthCount );
 
   /*
   // Increment the NIL anomaly count in Redis

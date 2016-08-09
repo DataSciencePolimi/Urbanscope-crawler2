@@ -29,7 +29,7 @@ const TIMELINE = 'timeline';
 // Module class declaration
 class FixSource extends Transform {
   constructor() {
-    super( { objectMode: true } )
+    super( { objectMode: true } );
     this.total = 0;
   }
   _transform( data, enc, cb ) {
@@ -39,7 +39,7 @@ class FixSource extends Transform {
 }
 class Log extends PassThrough {
   constructor() {
-    super( { objectMode: true } )
+    super( { objectMode: true } );
     this.total = 0;
   }
 
@@ -77,7 +77,7 @@ co( function* () {
   .pipe( new FixSource() );
 
   // push the data recieved in the update stream
-  const waitStream = pipeline( [ dataStream ] )
+  const waitStream = pipeline( [ dataStream ], true ) // Force pipeline
   .pipe( new Log() )
   .pipe( updatePost );
 
@@ -91,6 +91,6 @@ co( function* () {
   debug( 'All done, bye' );
 } )
 .catch( err => debug( 'FUUUUU', err, err.stack ) )
-.then( () => db.close() )
+.then( () => db.close() );
 
 //  50 6F 77 65 72 65 64  62 79  56 6F 6C 6F 78

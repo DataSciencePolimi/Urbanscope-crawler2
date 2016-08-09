@@ -139,7 +139,7 @@ co( function* () {
   debug( 'FUUUUU', err, err.stack );
 
   return Promise.all( db.close(), redis.quit() )
-  .then( () => process.exit(1) ) // O_O
+  .then( () => process.exit( 1 ) ); // O_O
 } );
 
 //  50 6F 77 65 72 65 64  62 79  56 6F 6C 6F 78
