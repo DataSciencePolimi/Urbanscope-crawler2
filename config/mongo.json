@@ -1,1 +1,7 @@
-/Users/volox/poli/UrbanScope/Code/mongo-shared.json
+{
+  "url": "mongodb://oldtown:27017",
+  "name": "UrbanScope2",
+  "collections": {
+    "posts": "posts"
+  }
+}

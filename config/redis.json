@@ -1,1 +1,4 @@
-/Users/volox//poli/UrbanScope/Code/redis-shared.json
+{
+  "host": "oldtown",
+  "keyPrefix": "UrbanScope:"
+}
